@@ -1,0 +1,65 @@
+/* Tables */
+
+.table {
+  margin-bottom: 0;
+  color: $black; 
+  thead {
+    th {
+      border-top: 0;
+      border-bottom-width: 1px;
+      font-family: $type1;
+      font-weight: $font-weight-medium;
+      background: #0090e7;
+      color: $white; 
+      i{
+        margin-left: 0.325rem;
+      }
+    }
+  }
+  th,
+  td {
+    vertical-align: middle;
+    font-size: $default-font-size;
+    line-height: 1;
+    img {
+      width: 30px;
+      height: 30px;
+      border-radius: 100%;
+    }
+    .badge {
+      margin-bottom: 0;
+    }
+  }
+  &.table-borderless{
+    border: none;
+    tr,td,th{
+      border: none;
+    }
+  }
+}
+
+.table{
+  border: 1px solid #dbdbdb!important;
+}
+.table th {
+  background: #0090e7;
+  border-top: 1px solid #dbdbdb!important;
+  padding: 0.5rem 0.2rem ;
+
+}
+.table td {
+
+  border-top: 1px solid #dbdbdb!important;
+  padding: 0.2rem;
+}
+.table th img, .table td img {
+  width: 20px;
+  height: 20px;
+  border-radius: 100%;
+}
+.table-bordered th, .table-bordered td {
+  border: 1px solid #dbdbdb;
+}
+.table thead th {
+  border: 1px solid #dbdbdb;
+}
