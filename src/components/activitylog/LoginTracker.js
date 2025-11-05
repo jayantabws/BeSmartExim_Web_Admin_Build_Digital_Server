@@ -92,6 +92,9 @@ const LoginTracker = () => {
   const handleSubmit = (values) => {
     setCurrentPage(1); // Reset to first page when filtering
     setFilterUserId(values.userId);
+
+      // Reset count before making new requests
+    setTotalCount(0);
     handleSubmitWithPage(values.userId, 1);
     getTotalCount(values.userId);
   };
@@ -171,7 +174,7 @@ const LoginTracker = () => {
         console.log("Data Length ", loginData?.length || 0);
 
         // Format the data with date/time separation
-        const formattedList = loginData.map((item, index) => {
+          const formattedList = loginData.map((item, index) => {
           const login = formatDateTime(item.loginDate, item.loginTime);
           const logout = formatDateTime(item.logoutDate, item.logoutTime);
 
@@ -188,10 +191,21 @@ const LoginTracker = () => {
 
         setLoginList(formattedList);
         setCurrentPage(page);
+
+         
+      // If no data is returned, make sure count is also 0
+      if (res.data.loginList?.length === 0 && page === 1) {
+        console.log("No data found, ensuring count is 0");
+        setTotalCount(0);
+      }
+
+        
       })
       .catch((err) => {
         console.log("Err", err);
         setLoginList([]);
+         // Reset count to 0 when there's an error
+      setTotalCount(0);
       })
       .finally(() => {
         setLoading(false);

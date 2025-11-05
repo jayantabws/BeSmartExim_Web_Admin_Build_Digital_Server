@@ -10,13 +10,18 @@ import * as Yup from 'yup';
 import AxiosUser from '../shared/AxiosUser';
 import moment from 'moment';
 import Select from "react-select";
+import './DownloadTracker.css';
 
 const validateForm = Yup.object().shape({
-  userId: Yup.string().required('This field is required'),
+  userId: Yup.string(),
+  fromDate: Yup.date(),
+  toDate: Yup.date(),
 });
 
 const initialValues = {
-  userId: '',
+  userId: "",
+  fromDate: "",
+  toDate: "",
 };
 
 const searchBYList = {
@@ -40,8 +45,10 @@ const DownloadTracker = () => {
   const [sortOrder, setSortOrder] = useState(undefined);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20); // 20 records per page
+  const [pageSize] = useState(20);
   const [filterUserId, setFilterUserId] = useState("");
+  const [filterFromDate, setFilterFromDate] = useState("");
+  const [filterToDate, setFilterToDate] = useState("");
 
   function onSortChange(sortName, sortOrder) {
     console.info('onSortChange', arguments);
@@ -49,12 +56,22 @@ const DownloadTracker = () => {
     setSortOrder(sortOrder);
   }
 
-  const getTotalCount = async (filterUserId = null) => {
+  const getTotalCount = async (filterUserId = null, fromDate = null, toDate = null) => {
     try {
       let url = `/search-management/search/countAllnew?isDownloaded=Y`;
+      const params = new URLSearchParams("isDownloaded=Y");
+      
       if (filterUserId) {
-        url += `&userId=${filterUserId}`;
+        params.append('userId', filterUserId);
       }
+      if (fromDate) {
+        params.append('fromDate', fromDate);
+      }
+      if (toDate) {
+        params.append('toDate', toDate);
+      }
+      
+      url = `/search-management/search/countAllnew?${params.toString()}`;
 
       console.log("Download Count URL:", url);
       
@@ -68,7 +85,6 @@ const DownloadTracker = () => {
       if (res.status === 200) {
         let count = 0;
         
-        // Handle different response structures
         if (typeof res.data === 'number') {
           count = res.data;
         } else if (res.data?.totalCount) {
@@ -85,15 +101,27 @@ const DownloadTracker = () => {
         
         console.log("Setting download total count to:", count);
         setTotalCount(count);
+      } else {
+        console.log("Non-200 response, setting count to 0");
+        setTotalCount(0);
       }
     } catch (err) {
       console.error("Error fetching download count:", err);
-      // If downloadcount endpoint doesn't exist, try using newcount with isDownloaded flag
       try {
         let fallbackUrl = `/search-management/search/newcount?isDownloaded=Y`;
+        const params = new URLSearchParams("isDownloaded=Y");
+        
         if (filterUserId) {
-          fallbackUrl += `&userId=${filterUserId}`;
+          params.append('userId', filterUserId);
         }
+        if (fromDate) {
+          params.append('fromDate', fromDate);
+        }
+        if (toDate) {
+          params.append('toDate', toDate);
+        }
+        
+        fallbackUrl = `/search-management/search/newcount?${params.toString()}`;
         
         const fallbackRes = await Axios({
           method: "GET",
@@ -114,7 +142,7 @@ const DownloadTracker = () => {
 
   useEffect(() => {
     getUsers();
-    handleSubmitWithPage("", 1);
+    handleSubmitWithPage("", "", "", 1);
     getTotalCount();
   }, []);
 
@@ -132,18 +160,36 @@ const DownloadTracker = () => {
   };
 
   const handleSubmit = (values) => {
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage(1);
     setFilterUserId(values.userId);
-    handleSubmitWithPage(values.userId, 1);
-    getTotalCount(values.userId);
+    setFilterFromDate(values.fromDate);
+    setFilterToDate(values.toDate);
+    
+    // Reset count before making new requests
+    setTotalCount(0);
+    
+    handleSubmitWithPage(values.userId, values.fromDate, values.toDate, 1);
+    getTotalCount(values.userId, values.fromDate, values.toDate);
   };
 
-  const handleSubmitWithPage = (userIdValue, page) => {
+  const handleSubmitWithPage = (userIdValue, fromDate, toDate, page) => {
     setLoading(true);
     let url = `search-management/search/listAllnew?pageNumber=${page}&pageSize=${pageSize}&isDownloaded=Y`;
+    
+    const params = new URLSearchParams(`pageNumber=${page}&pageSize=${pageSize}&isDownloaded=Y`);
     if (userIdValue) {
-      url += `&userId=${userIdValue}`;
+      params.append('userId', userIdValue);
     }
+    if (fromDate) {
+      params.append('fromDate', fromDate);
+    }
+    if (toDate) {
+      params.append('toDate', toDate);
+    }
+    
+    url = `search-management/search/listAllnew?${params.toString()}`;
+
+    console.log("Download List URL:", url);
 
     Axios({
       method: 'GET',
@@ -156,12 +202,22 @@ const DownloadTracker = () => {
         console.log("Download URL", url);
         console.log("Download List", res.data.queryList);
         console.log("Download Data Length ", res.data.queryList?.length || 0);
-        setQueryList(res.data.queryList || []);
+        
+        const queryData = res.data.queryList || [];
+        setQueryList(queryData);
         setCurrentPage(page);
+        
+        // If no data is returned, make sure count is also 0
+        if (queryData.length === 0 && page === 1) {
+          console.log("No data found, ensuring count is 0");
+          setTotalCount(0);
+        }
       })
       .catch((err) => {
         console.log('Err', err);
         setQueryList([]);
+        // Reset count to 0 when there's an error
+        setTotalCount(0);
       })
       .finally(() => {
         setLoading(false);
@@ -170,7 +226,7 @@ const DownloadTracker = () => {
 
   const handlePageChange = (page) => {
     if (page > 0 && page <= Math.ceil(totalCount / pageSize)) {
-      handleSubmitWithPage(filterUserId, page);
+      handleSubmitWithPage(filterUserId, filterFromDate, filterToDate, page);
     }
   };
 
@@ -246,98 +302,180 @@ const DownloadTracker = () => {
 
   return (
     <div>
-      <div className="page-header">
+      <div className="page-header mb-4">
         <nav aria-label="breadcrumb">
-          <ol className="breadcrumb">
+          <ol className="breadcrumb mb-2">
             <li className="breadcrumb-item">
               <a href="!#" onClick={(event) => event.preventDefault()}>
                 Activity Log
               </a>
             </li>
             <li className="breadcrumb-item active" aria-current="page">
-              {' '}
-              <h3 className="page-title"> Download Tracker </h3>
+              <h3 className="page-title mb-0">Download Tracker</h3>
             </li>
           </ol>
         </nav>
+      </div>
+
+      <div className="filter-section bg-light p-3 rounded shadow-sm">
         <Formik
           initialValues={initialValues}
+          validationSchema={validateForm}
           onSubmit={handleSubmit}
         >
-          {({ values, errors, setFieldValue, setFieldError, touched, isValid, handleSubmit, submitForm }) => {
-            return (
-              <Form>
-                <div className="d-flex justify-content-end align-items-center gap-2 mb-3 flex-wrap">
-                  <div style={{ minWidth: "400px", flex: "1 1 auto" }}>
-                    <Select
-                      name="userId"
-                      options={userList.map((user) => ({
-                        value: user.id,
-                        label: `${user.firstname} ${user.lastname} (${user.email})`,
-                      }))}
-                      value={userList
-                        .map((user) => ({
-                          value: user.id,
-                          label: `${user.firstname} ${user.lastname} (${user.email})`,
-                        }))
-                        .find((option) => option.value === values.userId) || null}
-                      onChange={(selectedOption) => {
-                        setFieldValue("userId", selectedOption ? selectedOption.value : "");
-                      }}
-                      placeholder="Select User..."
-                      classNamePrefix="select"
-                      isSearchable
-                      styles={{
-                        control: (base, state) => ({
-                          ...base,
-                          height: "42px",
-                          minHeight: "42px",
-                          margin: "15px",
-                          borderColor: state.isFocused ? "#007bff" : "#ced4da",
-                          boxShadow: state.isFocused
-                            ? "0 0 0 0.2rem rgba(0,123,255,.25)"
-                            : "none",
-                          "&:hover": { borderColor: "#007bff" },
-                        }),
-                        indicatorsContainer: (base) => ({
-                          ...base,
-                          height: "40px",
-                        }),
-                        valueContainer: (base) => ({
-                          ...base,
-                          height: "40px",
-                          padding: "0 8px",
-                        }),
-                        menu: (base) => ({
-                          ...base,
-                          zIndex: 9999,
-                          minWidth: "400px",
-                        }),
-                      }}
-                    />
-                  </div>
+          {({ values, setFieldValue, resetForm }) => (
 
-                  <button
-                    type="submit"
-                    className="btn btn-primary px-4 fw-semibold"
-                    style={{
-                      height: "42px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flex: "0 0 auto",
-                      marginBottom: "18px",
-                    }}
-                    disabled={loading}
-                  >
-                    {loading ? "LOADING..." : "FILTER"}
-                  </button>
-                </div>
-              </Form>
-            );
-          }}
+<Form>
+  <div
+    className="d-flex flex-wrap align-items-end justify-content-start gap-4 bg-white p-3 rounded shadow-sm"
+    style={{ width: "100%", marginTop: "10px" }}
+  >
+    {/* From Date */}
+    <div className="flex-grow-1" style={{ minWidth: "260px",paddingRight:"15px" }}>
+      <label className="form-label fw-semibold mb-2 ">
+        From Date
+      </label>
+      <input
+        type="date"
+        name="fromDate"
+        value={values.fromDate || ""}
+        onChange={(e) => setFieldValue("fromDate", e.target.value)}
+        className="form-control"
+        style={{
+          height: "42px",
+          borderRadius: "6px",
+        }}
+      />
+    </div>
+
+    {/* To Date */}
+    <div className="flex-grow-1" style={{ minWidth: "260px",paddingRight:"15px"}}>
+      <label className="form-label fw-semibold mb-2 " >
+        To Date
+      </label>
+      <input
+        type="date"
+        name="toDate"
+        value={values.toDate || ""}
+        onChange={(e) => setFieldValue("toDate", e.target.value)}
+        className="form-control"
+        style={{
+          height: "42px",
+          borderRadius: "6px",
+        }}
+      />
+    </div>
+
+    {/* User Dropdown */}
+    <div className="flex-grow-1" style={{ minWidth: "260px" ,paddingRight:"10px"}}>
+      <label className="form-label fw-semibold mb-2 ">
+        User
+      </label>
+      <Select
+        name="userId"
+        options={userList.map((user) => ({
+          value: user.id,
+          label: `${user.firstname} ${user.lastname} (${user.email})`,
+        }))}
+        value={userList
+          .map((user) => ({
+            value: user.id,
+            label: `${user.firstname} ${user.lastname} (${user.email})`,
+          }))
+          .find((option) => option.value === values.userId) || null}
+        onChange={(selectedOption) =>
+          setFieldValue("userId", selectedOption ? selectedOption.value : "")
+        }
+        placeholder="Select User..."
+        classNamePrefix="select"
+        isSearchable
+        isClearable
+        styles={{
+          control: (base, state) => ({
+            ...base,
+            height: "42px",
+            minHeight: "42px",
+            borderRadius: "6px",
+            borderColor: state.isFocused ? "#007bff" : "#ced4da",
+            boxShadow: state.isFocused
+              ? "0 0 0 0.2rem rgba(0,123,255,.25)"
+              : "none",
+            "&:hover": { borderColor: "#007bff" },
+          }),
+          menu: (base) => ({
+            ...base,
+            zIndex: 9999,
+          }),
+        }}
+      />
+    </div>
+
+    {/* Filter Button */}
+    <div style={{ minWidth: "130px",paddingRight:"10px" }}>
+      <label className="form-label fw-semibold mb-2 ">
+        
+      </label>
+      <button
+        type="submit"
+        className="btn btn-primary fw-semibold shadow-sm w-100"
+        style={{
+          height: "42px",
+          borderRadius: "6px",
+        }}
+        disabled={loading}
+      >
+        {loading ? "LOADING..." : "FILTER"}
+      </button>
+    </div>
+
+    {/* Reset Button */}
+    <div style={{ minWidth: "130px" }}>
+      <label className="form-label fw-semibold mb-2 text-secondary">
+        &nbsp;
+      </label>
+      <button
+        type="button"
+        onClick={() => {
+          const defaultFromDate = "";
+          const defaultToDate = "";
+          //  const defaultFromDate = moment().subtract(30, 'days').format('YYYY-MM-DD');
+          // const defaultToDate = moment().format('YYYY-MM-DD');
+          
+          resetForm({
+            values: {
+              userId: "",
+              fromDate: defaultFromDate,
+              toDate: defaultToDate,
+            }
+          });
+          
+          setCurrentPage(1);
+          setFilterUserId("");
+          setFilterFromDate(defaultFromDate);
+          setFilterToDate(defaultToDate);
+
+          // Reset count before making new requests
+          setTotalCount(0);
+
+          handleSubmitWithPage("", defaultFromDate, defaultToDate, 1);
+          getTotalCount("", defaultFromDate, defaultToDate);
+        }}
+        className="btn btn-secondary fw-semibold shadow-sm w-100"
+        style={{
+          height: "42px",
+          borderRadius: "6px",
+        }}
+      >
+        RESET
+      </button>
+    </div>
+  </div>
+</Form>
+
+          )}
         </Formik>
       </div>
+
       <div className="row">
         <div className="col-lg-12 grid-margin stretch-card">
           <div className="card">
@@ -375,7 +513,6 @@ const DownloadTracker = () => {
                       </div>
                       
                       <div className="d-flex align-items-center">
-                        {/* First Page */}
                         <button
                           className="btn btn-sm btn-outline-primary me-1"
                           disabled={currentPage === 1}
@@ -386,7 +523,6 @@ const DownloadTracker = () => {
                           <i className="fas fa-angle-double-left"></i> First
                         </button>
 
-                        {/* Previous Page */}
                         <button
                           className="btn btn-sm btn-outline-primary"
                           disabled={currentPage === 1}
@@ -397,7 +533,6 @@ const DownloadTracker = () => {
                           <i className="fas fa-angle-left"></i> Prev
                         </button>
 
-                        {/* Page Numbers */}
                         <div className="mx-2">
                           {generatePageNumbers().map((pageNum) => (
                             <button
@@ -419,7 +554,6 @@ const DownloadTracker = () => {
                           ))}
                         </div>
 
-                        {/* Next Page */}
                         <button
                           className="btn btn-sm btn-outline-primary"
                           disabled={currentPage === totalPages}
@@ -430,7 +564,6 @@ const DownloadTracker = () => {
                           Next <i className="fas fa-angle-right"></i>
                         </button>
 
-                        {/* Last Page */}
                         <button
                           className="btn btn-sm btn-outline-primary"
                           disabled={currentPage === totalPages}
@@ -445,14 +578,11 @@ const DownloadTracker = () => {
 
                   {/* No Data Message */}
                   {!loading && queryList.length === 0 && (
-                    <div className="text-center py-5">
-                      <div className="mb-3">
-                        <i className="fas fa-download fa-3x text-muted"></i>
+                    <div className="text-center py-4">
+                      <div className="alert alert-info">
+                        <i className="fas fa-info-circle me-2"></i>
+                        No download records found matching your search criteria.
                       </div>
-                      <h5 className="text-muted">No Download Records Found</h5>
-                      <p className="text-muted">
-                        {filterUserId ? 'No download records found for the selected user.' : 'No download records available.'}
-                      </p>
                     </div>
                   )}
                 </div>

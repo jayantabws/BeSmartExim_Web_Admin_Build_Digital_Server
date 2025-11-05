@@ -12,11 +12,15 @@ import moment from 'moment';
 import Select from "react-select";
 
 const validateForm = Yup.object().shape({
-  userId: Yup.string().required("This field is required"),
+  userId: Yup.string(),
+  fromDate: Yup.date(),
+  toDate: Yup.date(),
 });
 
 const initialValues = {
   userId: "",
+  fromDate: "",
+  toDate: "",
 };
 
 const searchBYList = {
@@ -45,6 +49,8 @@ const QueryTracker = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20); // 20 records per page
   const [filterUserId, setFilterUserId] = useState("");
+  const [filterFromDate, setFilterFromDate] = useState("");
+  const [filterToDate, setFilterToDate] = useState("");
 
   function onSortChange(sortName, sortOrder) {
     console.info('onSortChange', arguments);
@@ -52,11 +58,26 @@ const QueryTracker = () => {
     setSortOrder(sortOrder);
   }
 
-  const getTotalCount = (filterUserId = null) => {
+  const getTotalCount = (filterUserId = null, fromDate = null, toDate = null) => {
     let url = `/search-management/search/countAllnew`;
+    /*used to create and manage query strings — the part of a URL that comes after the “?”.*/
+    const params = new URLSearchParams();
+    
     if (filterUserId) {
-      url += `?userId=${filterUserId}`;
+      params.append('userId', filterUserId);
     }
+    if (fromDate) {
+      params.append('fromDate', fromDate);
+    }
+    if (toDate) {
+      params.append('toDate', toDate);
+    }
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+
+    console.log("Query Count URL:", url);
 
     Axios({
       method: "GET",
@@ -74,8 +95,8 @@ const QueryTracker = () => {
 
   useEffect(() => {
     getUsers();
-    handleSubmitWithPage("", 1);
-    getTotalCount();
+    handleSubmitWithPage("", filterFromDate, filterToDate, 1);
+    getTotalCount("", filterFromDate, filterToDate);
   }, []);
 
   const getUsers = () => {
@@ -94,16 +115,33 @@ const QueryTracker = () => {
   const handleSubmit = (values) => {
     setCurrentPage(1); // Reset to first page when filtering
     setFilterUserId(values.userId);
-    handleSubmitWithPage(values.userId, 1);
-    getTotalCount(values.userId);
+    setFilterFromDate(values.fromDate);
+    setFilterToDate(values.toDate);
+    // Reset count before making new requests
+    setTotalCount(0);
+
+    handleSubmitWithPage(values.userId, values.fromDate, values.toDate, 1);
+    getTotalCount(values.userId, values.fromDate, values.toDate);
   };
 
-  const handleSubmitWithPage = (userIdValue, page) => {
+  const handleSubmitWithPage = (userIdValue, fromDate, toDate, page) => {
     setLoading(true);
     let url = `search-management/search/listAllnew?pageNumber=${page}&pageSize=${pageSize}`;
+    
+    const params = new URLSearchParams(`pageNumber=${page}&pageSize=${pageSize}`);
     if (userIdValue) {
-      url += `&userId=${userIdValue}`;
+      params.append('userId', userIdValue);
     }
+    if (fromDate) {
+      params.append('fromDate', fromDate);
+    }
+    if (toDate) {
+      params.append('toDate', toDate);
+    }
+    
+    url = `search-management/search/listAllnew?${params.toString()}`;
+
+    console.log("Query List URL:", url);
 
     Axios({
       method: "GET",
@@ -118,10 +156,17 @@ const QueryTracker = () => {
         console.log("Data Length ", res.data.queryList?.length || 0);
         setQueryList(res.data.queryList || []);
         setCurrentPage(page);
+          // If no data is returned, make sure count is also 0
+        if (res.data.queryList?.length === 0 && page === 1) {
+          console.log("No data found, ensuring count is 0");
+          setTotalCount(0);
+        }
       })
       .catch((err) => {
         console.log("Err", err);
         setQueryList([]);
+        // Reset count to 0 when there's an error
+      setTotalCount(0);
       })
       .finally(() => {
         setLoading(false);
@@ -130,7 +175,7 @@ const QueryTracker = () => {
 
   const handlePageChange = (page) => {
     if (page > 0 && page <= Math.ceil(totalCount / pageSize)) {
-      handleSubmitWithPage(filterUserId, page);
+      handleSubmitWithPage(filterUserId, filterFromDate, filterToDate, page);
     }
   };
 
@@ -202,92 +247,178 @@ const QueryTracker = () => {
 
   return (
     <div>
-      <div className="page-header">
-        <nav aria-label="breadcrumb">
-          <ol className="breadcrumb">
-            <li className="breadcrumb-item"><a href="!#" onClick={(event) => event.preventDefault()}>Activity Log</a></li>
-            <li className="breadcrumb-item active" aria-current="page"><h3 className="page-title"> Query Tracker </h3></li>
-          </ol>
-        </nav>
+    <div className="page-header mb-4">
+  <nav aria-label="breadcrumb">
+    <ol className="breadcrumb mb-2">
+      <li className="breadcrumb-item">
+        <a href="!#" onClick={(event) => event.preventDefault()}>
+          Activity Log
+        </a>
+      </li>
+      <li className="breadcrumb-item active" aria-current="page">
+        <h3 className="page-title mb-0">Query Tracker</h3>
+      </li>
+    </ol>
+  </nav>
+</div>
 
-        <Formik
-          initialValues={initialValues}
-          onSubmit={handleSubmit}
-        >
-          {({ values, errors, setFieldValue, setFieldError, touched, isValid, handleSubmit, submitForm }) => {
-            return (
-              <Form>
-                <div className="d-flex justify-content-end align-items-center gap-2 mb-3 flex-wrap">
-                  <div style={{ minWidth: "400px", flex: "1 1 auto" }}>
-                    <Select
-                      name="userId"
-                      options={userList.map((user) => ({
-                        value: user.id,
-                        label: `${user.firstname} ${user.lastname} (${user.email})`,
-                      }))}
-                      value={userList
-                        .map((user) => ({
-                          value: user.id,
-                          label: `${user.firstname} ${user.lastname} (${user.email})`,
-                        }))
-                        .find((option) => option.value === values.userId) || null}
-                      onChange={(selectedOption) => {
-                        setFieldValue("userId", selectedOption ? selectedOption.value : "");
-                      }}
-                      placeholder="Select User..."
-                      classNamePrefix="select"
-                      isSearchable
-                      styles={{
-                        control: (base, state) => ({
-                          ...base,
-                          height: "42px",
-                          minHeight: "42px",
-                          margin: "15px",
-                          borderColor: state.isFocused ? "#007bff" : "#ced4da",
-                          boxShadow: state.isFocused
-                            ? "0 0 0 0.2rem rgba(0,123,255,.25)"
-                            : "none",
-                          "&:hover": { borderColor: "#007bff" },
-                        }),
-                        indicatorsContainer: (base) => ({
-                          ...base,
-                          height: "40px",
-                        }),
-                        valueContainer: (base) => ({
-                          ...base,
-                          height: "40px",
-                          padding: "0 8px",
-                        }),
-                        menu: (base) => ({
-                          ...base,
-                          zIndex: 9999,
-                          minWidth: "400px",
-                        }),
-                      }}
-                    />
-                  </div>
+<div className="filter-section bg-light p-3 rounded shadow-sm">
+  <Formik
+    initialValues={initialValues}
+    validationSchema={validateForm}
+    onSubmit={handleSubmit}
+  >
+    {({ values, setFieldValue, resetForm }) => (
+<Form>
+  <div
+    className="d-flex flex-wrap align-items-end justify-content-start gap-4 bg-white p-3 rounded shadow-sm"
+    style={{ width: "100%", marginTop: "10px" }}
+  >
+    {/* From Date */}
+    <div className="flex-grow-1" style={{ minWidth: "260px",paddingRight:"15px" }}>
+      <label className="form-label fw-semibold mb-2 ">
+        From Date
+      </label>
+      <input
+        type="date"
+        name="fromDate"
+        value={values.fromDate || ""}
+        onChange={(e) => setFieldValue("fromDate", e.target.value)}
+        className="form-control"
+        style={{
+          height: "42px",
+          borderRadius: "6px",
+        }}
+      />
+    </div>
 
-                  <button
-                    type="submit"
-                    className="btn btn-primary px-4 fw-semibold"
-                    style={{
-                      height: "42px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flex: "0 0 auto",
-                      marginBottom: "18px",
-                    }}
-                    disabled={loading}
-                  >
-                    {loading ? "LOADING..." : "FILTER"}
-                  </button>
-                </div>
-              </Form>
-            )
-          }}
-        </Formik>
-      </div>
+    {/* To Date */}
+    <div className="flex-grow-1" style={{ minWidth: "260px",paddingRight:"15px"}}>
+      <label className="form-label fw-semibold mb-2 " >
+        To Date
+      </label>
+      <input
+        type="date"
+        name="toDate"
+        value={values.toDate || ""}
+        onChange={(e) => setFieldValue("toDate", e.target.value)}
+        className="form-control"
+        style={{
+          height: "42px",
+          borderRadius: "6px",
+        }}
+      />
+    </div>
+
+    {/* User Dropdown */}
+    <div className="flex-grow-1" style={{ minWidth: "260px" ,paddingRight:"10px"}}>
+      <label className="form-label fw-semibold mb-2 ">
+        User
+      </label>
+      <Select
+        name="userId"
+        options={userList.map((user) => ({
+          value: user.id,
+          label: `${user.firstname} ${user.lastname} (${user.email})`,
+        }))}
+        value={userList
+          .map((user) => ({
+            value: user.id,
+            label: `${user.firstname} ${user.lastname} (${user.email})`,
+          }))
+          .find((option) => option.value === values.userId) || null}
+        onChange={(selectedOption) =>
+          setFieldValue("userId", selectedOption ? selectedOption.value : "")
+        }
+        placeholder="Select User..."
+        classNamePrefix="select"
+        isSearchable
+        isClearable
+        styles={{
+          control: (base, state) => ({
+            ...base,
+            height: "42px",
+            minHeight: "42px",
+            borderRadius: "6px",
+            borderColor: state.isFocused ? "#007bff" : "#ced4da",
+            boxShadow: state.isFocused
+              ? "0 0 0 0.2rem rgba(0,123,255,.25)"
+              : "none",
+            "&:hover": { borderColor: "#007bff" },
+          }),
+          menu: (base) => ({
+            ...base,
+            zIndex: 9999,
+          }),
+        }}
+      />
+    </div>
+
+    {/* Filter Button */}
+    <div style={{ minWidth: "130px",paddingRight:"10px" }}>
+      <label className="form-label fw-semibold mb-2 ">
+        
+      </label>
+      <button
+        type="submit"
+        className="btn btn-primary fw-semibold shadow-sm w-100"
+        style={{
+          height: "42px",
+          borderRadius: "6px",
+        }}
+        disabled={loading}
+      >
+        {loading ? "LOADING..." : "FILTER"}
+      </button>
+    </div>
+
+    {/* Reset Button */}
+    <div style={{ minWidth: "130px" }}>
+      <label className="form-label fw-semibold mb-2 text-secondary">
+        &nbsp;
+      </label>
+      <button
+        type="button"
+        onClick={() => {
+          const defaultFromDate = "";
+          const defaultToDate = "";
+          //  const defaultFromDate = moment().subtract(30, 'days').format('YYYY-MM-DD');
+          // const defaultToDate = moment().format('YYYY-MM-DD');
+          
+          resetForm({
+            values: {
+              userId: "",
+              fromDate: defaultFromDate,
+              toDate: defaultToDate,
+            }
+          });
+          
+          setCurrentPage(1);
+          setFilterUserId("");
+          setFilterFromDate(defaultFromDate);
+          setFilterToDate(defaultToDate);
+
+          // Reset count before making new requests
+          setTotalCount(0);
+
+          handleSubmitWithPage("", defaultFromDate, defaultToDate, 1);
+          getTotalCount("", defaultFromDate, defaultToDate);
+        }}
+        className="btn btn-secondary fw-semibold shadow-sm w-100"
+        style={{
+          height: "42px",
+          borderRadius: "6px",
+        }}
+      >
+        RESET
+      </button>
+    </div>
+  </div>
+</Form>
+
+    )}
+  </Formik>
+</div>
 
       <div className="row">
         <div className="col-lg-12 grid-margin stretch-card">
@@ -295,7 +426,10 @@ const QueryTracker = () => {
             <div className="card-body">
               {loading ? (
                 <div className="text-center my-3">
-                  <div className="spinner-border text-primary" role="status"></div>
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="sr-only">Loading...</span>
+                  </div>
+                  <p className="mt-2">Loading Query Tracker data...</p>
                 </div>
               ) : (
                 <div>
@@ -308,7 +442,7 @@ const QueryTracker = () => {
                     <TableHeaderColumn width='200' dataField='userSearchQuery' dataFormat={Period} dataSort={true}>Period</TableHeaderColumn>
                     <TableHeaderColumn width='75' dataField='totalRecords' dataSort={true}>Total Records</TableHeaderColumn>
                     <TableHeaderColumn width='100' dataField='createdDate' dataFormat={CreatedDate} dataSort={true}>Created Date</TableHeaderColumn>
-                    <TableHeaderColumn width="200" dataField="combinedColumn" dataFormat={combineColumns} dataSort={true}>Downloaded By</TableHeaderColumn>
+                    <TableHeaderColumn width="200" dataField="combinedColumn" dataFormat={combineColumns} dataSort={true}>Created By</TableHeaderColumn>
                   </BootstrapTable>
 
                   {/* Custom Pagination */}
@@ -375,6 +509,15 @@ const QueryTracker = () => {
                         >
                           Last
                         </button>
+                      </div>
+                    </div>
+                  )}
+                     {/* No Data Message */}
+                  {!loading && queryList.length === 0 && (
+                    <div className="text-center py-4">
+                      <div className="alert alert-info">
+                        <i className="fas fa-info-circle me-2"></i>
+                        No download records found matching your search criteria.
                       </div>
                     </div>
                   )}
