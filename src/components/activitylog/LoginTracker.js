@@ -53,6 +53,11 @@ const LoginTracker = () => {
       params.append('fromDate', fromDate);
     }
     if (toDate) {
+       if(!fromDate){
+         setLoading(false);
+      //  alert("Please select 'From Date' when 'To Date' is selected.");
+        return;
+      }
       params.append('toDate', toDate);
     }
     
@@ -187,6 +192,11 @@ const LoginTracker = () => {
       params.append('fromDate', fromDate);
     }
     if (toDate) {
+      if(!fromDate){
+        alert("Please select 'From Date' when 'To Date' is selected.");
+         setLoading(false);
+        return;
+      }
       params.append('toDate', toDate);
     }
     
@@ -290,6 +300,24 @@ const LoginTracker = () => {
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
+  const handleDateValidation = (field, value, setFieldValue, values) => {
+    let fromDate = field === "fromDate" ? value : values.fromDate;
+    let toDate = field === "toDate" ? value : values.toDate;  
+    if (field === "fromDate") {
+      if (toDate && value > toDate) {
+        Swal.fire("Error", "'From Date' cannot be later than 'To Date'", "error");
+        return;
+      }
+    } else if (field === "toDate") {
+      if (fromDate && value < fromDate) {
+        Swal.fire("Error", "'To Date' cannot be earlier than 'From Date'", "error");
+        return;
+      } 
+    }
+
+    setFieldValue(field, value);
+  };
+
   return (
     <div>
       <div className="page-header mb-4">
@@ -328,7 +356,7 @@ const LoginTracker = () => {
                     type="date"
                     name="fromDate"
                     value={values.fromDate || ""}
-                    onChange={(e) => setFieldValue("fromDate", e.target.value)}
+                    onChange={(e) => handleDateValidation("fromDate", e.target.value, setFieldValue, values)}
                     className="form-control"
                     style={{
                       height: "42px",
@@ -348,7 +376,7 @@ const LoginTracker = () => {
                     type="date"
                     name="toDate"
                     value={values.toDate || ""}
-                    onChange={(e) => setFieldValue("toDate", e.target.value)}
+                  onChange={(e) => handleDateValidation("toDate", e.target.value, setFieldValue, values)}
                     className="form-control"
                     style={{
                       height: "42px",
