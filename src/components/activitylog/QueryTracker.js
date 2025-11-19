@@ -10,6 +10,7 @@ import * as Yup from "yup";
 import AxiosUser from '../shared/AxiosUser';
 import moment from 'moment';
 import Select from "react-select";
+import './DownloadTracker.css';
 
 const validateForm = Yup.object().shape({
   userId: Yup.string(),
