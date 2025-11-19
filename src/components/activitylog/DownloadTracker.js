@@ -77,14 +77,14 @@ const DownloadTracker = () => {
       
       url = `/search-management/search/countAllnew?${params.toString()}`;
 
-      console.log("Download Count URL:", url);
+     // console.log("Download Count URL:", url);
       
       const res = await Axios({
         method: "GET",
         url: url,
       });
 
-      console.log("Download Count Response:", res.data);
+      //console.log("Download Count Response:", res.data);
       
       if (res.status === 200) {
         let count = 0;
@@ -103,10 +103,10 @@ const DownloadTracker = () => {
           count = res.data || 0;
         }
         
-        console.log("Setting download total count to:", count);
+       // console.log("Setting download total count to:", count);
         setTotalCount(count);
       } else {
-        console.log("Non-200 response, setting count to 0");
+       // console.log("Non-200 response, setting count to 0");
         setTotalCount(0);
       }
     } catch (err) {
@@ -134,7 +134,7 @@ const DownloadTracker = () => {
         
         if (fallbackRes.status === 200) {
           let count = fallbackRes.data || 0;
-          console.log("Setting download total count (fallback) to:", count);
+         // console.log("Setting download total count (fallback) to:", count);
           setTotalCount(count);
         }
       } catch (fallbackErr) {
@@ -198,7 +198,7 @@ const DownloadTracker = () => {
     
     url = `search-management/search/listAllnew?${params.toString()}`;
 
-    console.log("Download List URL:", url);
+    //console.log("Download List URL:", url);
 
     Axios({
       method: 'GET',
@@ -208,22 +208,34 @@ const DownloadTracker = () => {
       },
     })
       .then((res) => {
-        console.log("Download URL", url);
-        console.log("Download List", res.data.queryList);
-        console.log("Download Data Length ", res.data.queryList?.length || 0);
-        
-        const queryData = res.data.queryList || [];
-        setQueryList(queryData);
+       
+      const queryData = res.data.queryList || [];
+        //console.log("Download List Response Data:", queryData);
+
+        // Format the data with date/time separation using downloadedDate
+        const formattedList = queryData.map((item, index) => {
+          const downloaded = formatDateTime(item.downloadedDate || item.createdDate);
+
+          return {
+            ...item,
+            // Ensure we have a unique key field
+            searchId: item.searchId || `download-${page}-${index}`,
+            downloadedDateOnly: downloaded.date,
+            downloadedTimeOnly: downloaded.time
+          };
+        });
+
+        setQueryList(formattedList);
         setCurrentPage(page);
         
         // If no data is returned, make sure count is also 0
         if (queryData.length === 0 && page === 1) {
-          console.log("No data found, ensuring count is 0");
+          //console.log("No data found, ensuring count is 0");
           setTotalCount(0);
         }
       })
       .catch((err) => {
-        console.log('Err', err);
+       // console.log('Err', err);
         setQueryList([]);
         // Reset count to 0 when there's an error
         setTotalCount(0);
@@ -326,6 +338,36 @@ const DownloadTracker = () => {
   
       setFieldValue(field, value);
     };
+
+
+    const formatDateTime = (dateString) => {
+  // If dateString contains a full ISO datetime, parse it
+  if (dateString && (dateString.includes('T') || dateString.includes('Z'))) {
+    const dateObj = moment(dateString);
+    if (dateObj.isValid()) {
+      return { 
+        date: dateObj.format("DD/MM/YYYY"), 
+        time: dateObj.format("hh:mm A") 
+      };
+    }
+  }
+  
+  // Handle single date string
+  if (dateString) {
+    if (dateString.includes('T') || dateString.includes(' ')) {
+      const dateObj = moment(dateString);
+      if (dateObj.isValid()) {
+        return { 
+          date: dateObj.format("DD/MM/YYYY"), 
+          time: dateObj.format("hh:mm:ss A") 
+        };
+      }
+    }
+    return { date: moment(dateString).format("DD/MM/YYYY"), time: "-" };
+  }
+  
+  return { date: "-", time: "-" };
+};
 
   return (
     <div>
@@ -526,6 +568,7 @@ const DownloadTracker = () => {
                     <TableHeaderColumn width="210" dataField="userSearchQuery" dataFormat={Period} dataSort={true}>Period</TableHeaderColumn>
                     <TableHeaderColumn width="75" dataField="totalRecords" dataSort={true}>Total Records</TableHeaderColumn>
                     <TableHeaderColumn width="100" dataField="createdDate" dataFormat={CreatedDate} dataSort={true}>Downloaded on</TableHeaderColumn>
+                        <TableHeaderColumn width="120" dataField="downloadedTimeOnly" dataSort={true}>Downloaded Time</TableHeaderColumn>
                     <TableHeaderColumn width="200" dataField="combinedColumn" dataFormat={combineColumns} dataSort={true}>Downloaded By</TableHeaderColumn>
                     <TableHeaderColumn width="100" dataField="recordsDownloaded" dataSort={true}>Records Downloaded</TableHeaderColumn>
                   </BootstrapTable>

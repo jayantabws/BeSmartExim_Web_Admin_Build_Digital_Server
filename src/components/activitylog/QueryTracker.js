@@ -70,8 +70,7 @@ const QueryTracker = () => {
       params.append('fromDate', fromDate);
     }
     if (toDate) {
-      if(!fromDate){
-       
+      if(!fromDate){    
          setLoading(false);
         return;
       }
@@ -82,13 +81,13 @@ const QueryTracker = () => {
       url += `?${params.toString()}`;
     }
 
-    console.log("Query Count URL:", url);
+    //console.log("Query Count URL:", url);
 
     Axios({
       method: "GET",
       url: url,
     }).then((res) => {
-        console.log("Count Res > >>", res);
+       // console.log("Count Res > >>", res);
         if (res.data && res.status === 200) {
           setTotalCount(res.data || 0);
         }
@@ -151,7 +150,7 @@ const QueryTracker = () => {
     
     url = `search-management/search/listAllnew?${params.toString()}`;
 
-    console.log("Query List URL:", url);
+   // console.log("Query List URL:", url);
 
     Axios({
       method: "GET",
@@ -161,14 +160,26 @@ const QueryTracker = () => {
       },
     })
       .then((res) => {
-        console.log("URL", url);
-        console.log("Query List", res.data.queryList);
-        console.log("Data Length ", res.data.queryList?.length || 0);
-        setQueryList(res.data.queryList || []);
+      const queryData = res.data.queryList || [];
+
+        // Format the data with date/time separation (similar to LoginTracker)
+        const formattedList = queryData.map((item, index) => {
+          const created = formatDateTime(item.createdDate);
+
+          return {
+            ...item,
+            // Ensure we have a unique key field
+            searchId: item.searchId || `query-${page}-${index}`,
+            createdDateOnly: created.date,
+            createdTimeOnly: created.time
+          };
+        });
+
+        setQueryList(formattedList);
         setCurrentPage(page);
           // If no data is returned, make sure count is also 0
         if (res.data.queryList?.length === 0 && page === 1) {
-          console.log("No data found, ensuring count is 0");
+        //  console.log("No data found, ensuring count is 0");
           setTotalCount(0);
         }
       })
@@ -272,6 +283,36 @@ const QueryTracker = () => {
   
       setFieldValue(field, value);
     };
+
+
+    const formatDateTime = (dateString) => {
+  // If dateString contains a full ISO datetime, parse it
+  if (dateString && (dateString.includes('T') || dateString.includes('Z'))) {
+    const dateObj = moment(dateString);
+    if (dateObj.isValid()) {
+      return { 
+        date: dateObj.format("DD/MM/YYYY"), 
+        time: dateObj.format("hh:mm A") 
+      };
+    }
+  }
+  
+  // Handle single date string
+  if (dateString) {
+    if (dateString.includes('T') || dateString.includes(' ')) {
+      const dateObj = moment(dateString);
+      if (dateObj.isValid()) {
+        return { 
+          date: dateObj.format("DD/MM/YYYY"), 
+          time: dateObj.format("hh:mm:ss A") 
+        };
+      }
+    }
+    return { date: moment(dateString).format("DD/MM/YYYY"), time: "-" };
+  }
+  
+  return { date: "-", time: "-" };
+};
 
   return (
     <div>
@@ -472,6 +513,7 @@ const QueryTracker = () => {
                     <TableHeaderColumn width='200' dataField='userSearchQuery' dataFormat={Period} dataSort={true}>Period</TableHeaderColumn>
                     <TableHeaderColumn width='75' dataField='totalRecords' dataSort={true}>Total Records</TableHeaderColumn>
                     <TableHeaderColumn width='100' dataField='createdDate' dataFormat={CreatedDate} dataSort={true}>Created Date</TableHeaderColumn>
+                    <TableHeaderColumn width='120' dataField='createdTimeOnly' dataSort={true}>Created Time</TableHeaderColumn>
                     <TableHeaderColumn width="200" dataField="combinedColumn" dataFormat={combineColumns} dataSort={true}>Created By</TableHeaderColumn>
                   </BootstrapTable>
 
