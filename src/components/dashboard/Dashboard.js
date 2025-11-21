@@ -1,9 +1,13 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import Slider from "react-slick";
 import { TodoListComponent } from '../../apps/TodoList'
 import { VectorMap } from "react-jvectormap"
+import AxiosUser from '../shared/AxiosUser';
+import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
+import moment from 'moment';
 
+import "./mycard.css";
 const mapData = {
   "BZ": 75.00,
   "US": 56.25,
@@ -14,6 +18,94 @@ const mapData = {
 }
 
 function Dashboard() {
+
+   const [activeLoginData, setActiveLoginData] = React.useState([]);
+   const [totalLoginCount, setTotalLoginCount] = React.useState(0);
+   const [sortName, setSortName] = useState(undefined);
+   const [sortOrder, setSortOrder] = useState(undefined);
+
+   function onSortChange(sortName, sortOrder) {
+     console.info('onSortChange', arguments);
+     setSortName(sortName);
+     setSortOrder(sortOrder);
+   }
+
+   const getActiveLoginData = () => {
+      AxiosUser({
+        method: "GET",
+        url: `/user-management/loginusers`
+      }).then(res => {
+        console.log("Active Login Data", res);
+        setActiveLoginData(res.data);
+      })
+      .catch(err => {
+        console.log("Err", err);
+      });
+   }
+
+   const getTotalLoginCount=()=>{
+    AxiosUser({
+        method: "GET",
+        url: `/user-management/loginusercount`
+      }).then(res => {
+       // console.log("Login Count", res);
+        setTotalLoginCount(res.data);
+      })
+      .catch(err => {
+        console.log("Err", err);
+      });
+   }
+   useEffect(() => {
+    getTotalLoginCount();
+    getActiveLoginData();
+   }, [])
+
+  const fullName = (cell, row) => {
+    return (
+      <div className="d-flex align-items-center">
+        <div className="employee-icon bg-success me-2" style={{
+          width: '28px', 
+          height: '28px', 
+          borderRadius: '50%', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          color: 'white',
+          marginRight: '10px'
+        }}>
+          <i className="mdi mdi-account"></i>
+        </div>
+        <div className="emp-name"> {row.name}</div>
+      </div>
+    );
+  }
+
+  const statusFormatter = (cell, row) => {
+    return (<span class="badge ">
+  <span class="blink-dot"></span> online
+</span>);
+  }
+
+  const indexN = (cell, row, enumObject, index) => {
+    return (<div>{index + 1}</div>);
+  }
+
+  const loginTimeFormatter = (cell, row) => {
+    // Choose one of these formats:
+    // return moment(cell).format("DD/MM/YYYY HH:mm");        // 21/11/2025 14:30
+    // return moment(cell).format("MM-DD-YYYY hh:mm A");      // 11-21-2025 02:30 PM  
+    // return moment(cell).format("DD-MMM-YY h:mm A");        // 21-Nov-25 2:30 PM
+    // return moment(cell).format("ddd, MMM DD h:mm A");      // Thu, Nov 21 2:30 PM
+    // return moment(cell).format("YYYY-MM-DD HH:mm:ss");     // 2025-11-21 14:30:25
+    // return moment(cell).format("DD/MM/YY HH:mm");          // 21/11/25 14:30
+    return moment(cell).format("hh:mm A");        // 21/11/2025 02:30 PM
+  }
+
+  const options = {
+    sortName: sortName,
+    sortOrder: sortOrder,
+    onSortChange: onSortChange
+  };
 
   const transactionHistoryData =  {
     labels: ["Paypal", "Stripe","Cash"],
@@ -44,38 +136,39 @@ function Dashboard() {
     }
   }
 
-  const sliderSettings = {
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1
-  }
-  function toggleProBanner() {
-    document.querySelector('.proBanner').classList.toggle("hide");
-  }
+
     return (
       <div>
         
         <div className="row">
-          <div className="col-sm-4 grid-margin">
-            <div className="card">
-              <div className="card-body">
-                <h5>Revenue</h5>
-                <div className="row">
-                  <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                    <div className="d-flex d-sm-block d-md-flex align-items-center">
-                      <h2 className="mb-0">$32123</h2>
-                      <p className="text-success ml-2 mb-0 font-weight-medium">+3.5%</p>
-                    </div>
-                    <h6 className="text-muted font-weight-normal">11.38% Since last month</h6>
-                  </div>
-                  <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                    <i className="icon-lg mdi mdi-codepen text-primary ml-auto"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+         <div className="col-sm-4 grid-margin">
+  <div className="card shadow-sm border-0 metric-card">
+    <div className="card-body">
+
+      <div className="d-flex justify-content-between align-items-center">
+        <div>
+          <h6 className="metric-title">Active Login</h6>
+
+          <h2 className="metric-value">
+                      <span class="badge  whiteColor">
+  <span class="blink-dot"></span>
+</span>{totalLoginCount}  online
+          </h2>
+
+
+
+          
+        </div>
+
+        <div className="metric-icon">
+          <i className="mdi mdi-account-group-outline"></i>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
           <div className="col-sm-4 grid-margin">
             <div className="card">
               <div className="card-body">
@@ -148,107 +241,105 @@ function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="col-md-8 grid-margin stretch-card">
-            <div className="card">
-              <div className="card-body">
-                <div className="d-flex flex-row justify-content-between">
-                  <h4 className="card-title mb-1">Open Projects</h4>
-                  <p className="text-muted mb-1">Your data status</p>
-                </div>
-                <div className="row">
-                  <div className="col-12">
-                    <div className="preview-list">
-                      <div className="preview-item border-bottom">
-                        <div className="preview-thumbnail">
-                          <div className="preview-icon bg-primary">
-                            <i className="mdi mdi-file-document"></i>
-                          </div>
-                        </div>
-                        <div className="preview-item-content d-sm-flex flex-grow">
-                          <div className="flex-grow">
-                            <h6 className="preview-subject">Admin dashboard design</h6>
-                            <p className="text-muted mb-0">Broadcast web app mockup</p>
-                          </div>
-                          <div className="mr-auto text-sm-right pt-2 pt-sm-0">
-                            <p className="text-muted">15 minutes ago</p>
-                            <p className="text-muted mb-0">30 tasks, 5 issues </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="preview-item border-bottom">
-                        <div className="preview-thumbnail">
-                          <div className="preview-icon bg-success">
-                            <i className="mdi mdi-cloud-download"></i>
-                          </div>
-                        </div>
-                        <div className="preview-item-content d-sm-flex flex-grow">
-                          <div className="flex-grow">
-                            <h6 className="preview-subject">Wordpress Development</h6>
-                            <p className="text-muted mb-0">Upload new design</p>
-                          </div>
-                          <div className="mr-auto text-sm-right pt-2 pt-sm-0">
-                            <p className="text-muted">1 hour ago</p>
-                            <p className="text-muted mb-0">23 tasks, 5 issues </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="preview-item border-bottom">
-                        <div className="preview-thumbnail">
-                          <div className="preview-icon bg-info">
-                            <i className="mdi mdi-clock"></i>
-                          </div>
-                        </div>
-                        <div className="preview-item-content d-sm-flex flex-grow">
-                          <div className="flex-grow">
-                            <h6 className="preview-subject">Project meeting</h6>
-                            <p className="text-muted mb-0">New project discussion</p>
-                          </div>
-                          <div className="mr-auto text-sm-right pt-2 pt-sm-0">
-                            <p className="text-muted">35 minutes ago</p>
-                            <p className="text-muted mb-0">15 tasks, 2 issues</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="preview-item border-bottom">
-                        <div className="preview-thumbnail">
-                          <div className="preview-icon bg-danger">
-                            <i className="mdi mdi-email-open"></i>
-                          </div>
-                        </div>
-                        <div className="preview-item-content d-sm-flex flex-grow">
-                          <div className="flex-grow">
-                            <h6 className="preview-subject">Broadcast Mail</h6>
-                            <p className="text-muted mb-0">Sent release details to team</p>
-                          </div>
-                          <div className="mr-auto text-sm-right pt-2 pt-sm-0">
-                            <p className="text-muted">55 minutes ago</p>
-                            <p className="text-muted mb-0">35 tasks, 7 issues </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="preview-item">
-                        <div className="preview-thumbnail">
-                          <div className="preview-icon bg-warning">
-                            <i className="mdi mdi-chart-pie"></i>
-                          </div>
-                        </div>
-                        <div className="preview-item-content d-sm-flex flex-grow">
-                          <div className="flex-grow">
-                            <h6 className="preview-subject">UI Design</h6>
-                            <p className="text-muted mb-0">New application planning</p>
-                          </div>
-                          <div className="mr-auto text-sm-right pt-2 pt-sm-0">
-                            <p className="text-muted">50 minutes ago</p>
-                            <p className="text-muted mb-0">27 tasks, 4 issues </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+
+
+
+<div className="col-md-8 mx-auto">
+  <div className="card shadow-sm border-0">
+    <div className="card-body">
+      <div className="page-header">
+        <nav aria-label="breadcrumb">
+          <ol className="breadcrumb">
+           
+            <li className="breadcrumb-item active" aria-current="page">
+              <h3 className="page-title">
+                <i className="fa-solid fa-users"></i> Active User Login Details 
+                {/* <span className="badge bg-success company-status whiteColor ml-3">● {totalLoginCount} Active Login</span> */}
+              </h3>
+            </li>
+          </ol>
+        </nav>
+      </div>
+      
+      <div className="table-responsive">
+        <BootstrapTable data={activeLoginData} striped hover 
+            pagination={true} search
+            options={options}
+        >
+            <TableHeaderColumn width='50' isKey dataField='id' dataFormat={indexN}>Sl No</TableHeaderColumn>
+            <TableHeaderColumn width='150' dataField='name' dataFormat={fullName} dataSort={true}>Employee Name</TableHeaderColumn>
+            <TableHeaderColumn width='200' dataField='email' dataSort={true}>Email</TableHeaderColumn>
+            <TableHeaderColumn width='120' dataField='mobile' dataSort={true}>Mobile</TableHeaderColumn>
+            <TableHeaderColumn width='180' dataField='companyName' dataSort={true}>Company Name</TableHeaderColumn>
+            <TableHeaderColumn width='140' dataField='loginTime' dataFormat={loginTimeFormatter} dataSort={true}>Login Time</TableHeaderColumn>
+            <TableHeaderColumn width='100' dataField='status' dataFormat={statusFormatter}>Status</TableHeaderColumn>
+        </BootstrapTable>
+      </div>
+
+     
+      {/* <div class="company-card">
+        <div class="company-header">
+          <div class="company-title">
+            <i class="mdi mdi-domain text-primary"></i> Zentech Infotech
           </div>
+          <span class="badge bg-success company-status whiteColor">● Company Online</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Email</th>
+                <th>Login Date</th>
+                <th>Login Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="employee-icon bg-success">
+                      <i class="mdi mdi-account"></i>
+                    </div>
+                    <div class="emp-name">Faisal Ahmad</div>
+                  </div>
+                </td>
+                <td>faisal@example.com</td>
+                <td>21 Nov 2025</td>
+                <td>09:50 AM</td>
+                <td><span class="badge bg-success px-3 py-2 whiteColor">Online</span></td>
+              </tr>
+
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="employee-icon bg-danger">
+                      <i class="mdi mdi-account"></i>
+                    </div>
+                    <div class="emp-name">Muhammad Saif</div>
+                  </div>
+                </td>
+                <td>saif@example.com</td>
+                <td>21 Nov 2025</td>
+                <td>10:05 AM</td>
+                <td><span class="badge bg-danger px-3 py-2 whiteColor">Offline</span></td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div> */}
+
+    </div>
+  </div>
+</div>
+
+
+
+
         </div>
         {/* <div className="row ">
           <div className="col-12 grid-margin">

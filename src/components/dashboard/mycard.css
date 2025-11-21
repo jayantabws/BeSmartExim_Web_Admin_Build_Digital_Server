@@ -1,0 +1,55 @@
+.metric-card {
+  border-radius: 12px;
+  padding: 5px;
+}
+
+.metric-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6c757d;
+}
+
+.metric-value {
+  font-size: 28px;
+  font-weight: 700;
+  margin-top: 5px;
+}
+
+.metric-subtext {
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.metric-icon {
+  background: #e9f5ff;
+  padding: 14px;
+  border-radius: 12px;
+}
+
+.metric-icon i {
+  font-size: 32px;
+  color: #007bff;
+}
+
+/* Status Dot */
+.status-badge {
+  display: flex;
+  align-items: center;
+}
+
+.blink-dot {
+  height: 12px;
+  width: 12px;
+  background-color: #28a745;
+  border-radius: 50%;
+  display: inline-block;
+  animation: blink 1.2s infinite ease-in-out;
+}
+
+/* Blink Animation */
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.2; }
+  100% { opacity: 1; }
+}
