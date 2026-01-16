@@ -44,7 +44,7 @@ const DownloadTracker = () => {
   const [sortName, setSortName] = useState(undefined);
   const [sortOrder, setSortOrder] = useState(undefined);
   const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(20);
   const [filterUserId, setFilterUserId] = useState("");
   const [filterFromDate, setFilterFromDate] = useState("");
@@ -146,7 +146,7 @@ const DownloadTracker = () => {
 
   useEffect(() => {
     getUsers();
-    handleSubmitWithPage("", "", "", 1);
+    handleSubmitWithPage("", "", "", 0);
     getTotalCount();
   }, []);
 
@@ -164,7 +164,7 @@ const DownloadTracker = () => {
   };
 
   const handleSubmit = (values) => {
-    setCurrentPage(1);
+    setCurrentPage(0);
     setFilterUserId(values.userId);
     setFilterFromDate(values.fromDate);
     setFilterToDate(values.toDate);
@@ -172,7 +172,7 @@ const DownloadTracker = () => {
     // Reset count before making new requests
     setTotalCount(0);
     
-    handleSubmitWithPage(values.userId, values.fromDate, values.toDate, 1);
+    handleSubmitWithPage(values.userId, values.fromDate, values.toDate, 0);
     getTotalCount(values.userId, values.fromDate, values.toDate);
   };
 
@@ -246,7 +246,7 @@ const DownloadTracker = () => {
   };
 
   const handlePageChange = (page) => {
-    if (page > 0 && page <= Math.ceil(totalCount / pageSize)) {
+    if (page >= 0 && page <= Math.ceil(totalCount / pageSize)) {
       handleSubmitWithPage(filterUserId, filterFromDate, filterToDate, page);
     }
   };
@@ -272,7 +272,7 @@ const DownloadTracker = () => {
   };
 
   const indexN = (cell, row, enumObject, index) => {
-    return <div>{(currentPage - 1) * pageSize + index + 1}</div>;
+    return <div>{currentPage  * pageSize + index + 1}</div>;
   };
 
   const SearchType = (cell, row, enumObject, index) => {
@@ -520,7 +520,7 @@ const DownloadTracker = () => {
             }
           });
           
-          setCurrentPage(1);
+          setCurrentPage(0);
           setFilterUserId("");
           setFilterFromDate(defaultFromDate);
           setFilterToDate(defaultToDate);
@@ -528,7 +528,7 @@ const DownloadTracker = () => {
           // Reset count before making new requests
           setTotalCount(0);
 
-          handleSubmitWithPage("", defaultFromDate, defaultToDate, 1);
+          handleSubmitWithPage("", defaultFromDate, defaultToDate, 0);
           getTotalCount("", defaultFromDate, defaultToDate);
         }}
         className="btn btn-secondary fw-semibold shadow-sm w-100"
@@ -578,7 +578,7 @@ const DownloadTracker = () => {
                     <div className="d-flex justify-content-between align-items-center mt-4 p-3" style={{ backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
                       <div>
                         <span className="text-muted">
-                          Showing <strong>{(currentPage - 1) * pageSize + 1}</strong> to{" "}
+                          Showing <strong>{currentPage  * pageSize + 1}</strong> to{" "}
                           <strong>{Math.min(currentPage * pageSize, totalCount)}</strong> of{" "}
                           <strong>{totalCount}</strong> downloads
                         </span>
@@ -587,8 +587,8 @@ const DownloadTracker = () => {
                       <div className="d-flex align-items-center">
                         <button
                           className="btn btn-sm btn-outline-primary me-1"
-                          disabled={currentPage === 1}
-                          onClick={() => handlePageChange(1)}
+                          disabled={currentPage === 0}
+                          onClick={() => handlePageChange(0)}
                           style={{ marginRight: '5px' }}
                           title="First Page"
                         >
@@ -597,7 +597,7 @@ const DownloadTracker = () => {
 
                         <button
                           className="btn btn-sm btn-outline-primary"
-                          disabled={currentPage === 1}
+                          disabled={currentPage === 0}
                           onClick={() => handlePageChange(currentPage - 1)}
                           style={{ marginRight: '5px' }}
                           title="Previous Page"
@@ -610,11 +610,11 @@ const DownloadTracker = () => {
                             <button
                               key={pageNum}
                               className={`btn btn-sm ${
-                                currentPage === pageNum 
+                                currentPage === pageNum - 1 
                                   ? 'btn-primary' 
                                   : 'btn-outline-primary'
                               }`}
-                              onClick={() => handlePageChange(pageNum)}
+                              onClick={() => handlePageChange(pageNum - 1)}
                               style={{ 
                                 marginRight: '3px', 
                                 minWidth: '35px',
@@ -628,7 +628,7 @@ const DownloadTracker = () => {
 
                         <button
                           className="btn btn-sm btn-outline-primary"
-                          disabled={currentPage === totalPages}
+                          disabled={currentPage === totalPages - 1}
                           onClick={() => handlePageChange(currentPage + 1)}
                           style={{ marginRight: '5px' }}
                           title="Next Page"
@@ -638,8 +638,8 @@ const DownloadTracker = () => {
 
                         <button
                           className="btn btn-sm btn-outline-primary"
-                          disabled={currentPage === totalPages}
-                          onClick={() => handlePageChange(totalPages)}
+                          disabled={currentPage === totalPages - 1}
+                          onClick={() => handlePageChange(totalPages - 1)}
                           title="Last Page"
                         >
                           Last <i className="fas fa-angle-double-right"></i>

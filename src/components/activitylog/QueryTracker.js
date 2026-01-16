@@ -47,7 +47,7 @@ const QueryTracker = () => {
   const [sortName, setSortName] = useState(undefined);
   const [sortOrder, setSortOrder] = useState(undefined);
   const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(20); // 20 records per page
   const [filterUserId, setFilterUserId] = useState("");
   const [filterFromDate, setFilterFromDate] = useState("");
@@ -100,7 +100,7 @@ const QueryTracker = () => {
 
   useEffect(() => {
     getUsers();
-    handleSubmitWithPage("", filterFromDate, filterToDate, 1);
+    handleSubmitWithPage("", filterFromDate, filterToDate, 0);
     getTotalCount("", filterFromDate, filterToDate);
   }, []);
 
@@ -118,14 +118,14 @@ const QueryTracker = () => {
   };
 
   const handleSubmit = (values) => {
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage(0); // Reset to first page when filtering
     setFilterUserId(values.userId);
     setFilterFromDate(values.fromDate);
     setFilterToDate(values.toDate);
     // Reset count before making new requests
     setTotalCount(0);
 
-    handleSubmitWithPage(values.userId, values.fromDate, values.toDate, 1);
+    handleSubmitWithPage(values.userId, values.fromDate, values.toDate, 0);
     getTotalCount(values.userId, values.fromDate, values.toDate);
   };
 
@@ -196,7 +196,7 @@ const QueryTracker = () => {
   };
 
   const handlePageChange = (page) => {
-    if (page > 0 && page <= Math.ceil(totalCount / pageSize)) {
+    if (page >= 0 && page <= Math.ceil(totalCount / pageSize)) {
       handleSubmitWithPage(filterUserId, filterFromDate, filterToDate, page);
     }
   };
@@ -222,7 +222,7 @@ const QueryTracker = () => {
   };
 
   const indexN = (cell, row, enumObject, index) => {
-    return <div>{(currentPage - 1) * pageSize + index + 1}</div>;
+    return <div>{ currentPage  * pageSize + index + 1}</div>;
   };
 
   const SearchType = (cell, row, enumObject, index) => {
@@ -465,7 +465,7 @@ const QueryTracker = () => {
             }
           });
           
-          setCurrentPage(1);
+          setCurrentPage(0);
           setFilterUserId("");
           setFilterFromDate(defaultFromDate);
           setFilterToDate(defaultToDate);
@@ -473,7 +473,7 @@ const QueryTracker = () => {
           // Reset count before making new requests
           setTotalCount(0);
 
-          handleSubmitWithPage("", defaultFromDate, defaultToDate, 1);
+          handleSubmitWithPage("", defaultFromDate, defaultToDate, 0);
           getTotalCount("", defaultFromDate, defaultToDate);
         }}
         className="btn btn-secondary fw-semibold shadow-sm w-100"
@@ -522,7 +522,7 @@ const QueryTracker = () => {
                   {totalCount > 0 && (
                     <div className="d-flex justify-content-between align-items-center mt-3">
                       <span>
-                        Showing {(currentPage - 1) * pageSize + 1} to{" "}
+                        Showing {currentPage * pageSize + 1} to{" "}
                         {Math.min(currentPage * pageSize, totalCount)} of{" "}
                         {totalCount} results
                       </span>
@@ -531,8 +531,8 @@ const QueryTracker = () => {
                         {/* First Page */}
                         <button
                           className="btn btn-sm btn-outline-primary me-1"
-                          disabled={currentPage === 1}
-                          onClick={() => handlePageChange(1)}
+                          disabled={currentPage === 0}
+                          onClick={() => handlePageChange(0)}
                           style={{ marginRight: '5px' }}
                         >
                           First
@@ -541,7 +541,7 @@ const QueryTracker = () => {
                         {/* Previous Page */}
                         <button
                           className="btn btn-sm btn-outline-primary"
-                          disabled={currentPage === 1}
+                          disabled={currentPage === 0}
                           onClick={() => handlePageChange(currentPage - 1)}
                           style={{ marginRight: '5px' }}
                         >
@@ -553,11 +553,11 @@ const QueryTracker = () => {
                           <button
                             key={pageNum}
                             className={`btn btn-sm ${
-                              currentPage === pageNum 
+                              currentPage === pageNum - 1
                                 ? 'btn-primary' 
                                 : 'btn-outline-primary'
                             }`}
-                            onClick={() => handlePageChange(pageNum)}
+                            onClick={() => handlePageChange(pageNum -1)}
                             style={{ marginRight: '5px' }}
                           >
                             {pageNum}
@@ -567,7 +567,7 @@ const QueryTracker = () => {
                         {/* Next Page */}
                         <button
                           className="btn btn-sm btn-outline-primary"
-                          disabled={currentPage === totalPages}
+                          disabled={currentPage === totalPages - 1}
                           onClick={() => handlePageChange(currentPage + 1)}
                           style={{ marginRight: '5px' }}
                         >
@@ -577,8 +577,8 @@ const QueryTracker = () => {
                         {/* Last Page */}
                         <button
                           className="btn btn-sm btn-outline-primary"
-                          disabled={currentPage === totalPages}
-                          onClick={() => handlePageChange(totalPages)}
+                          disabled={currentPage === totalPages - 1}
+                          onClick={() => handlePageChange(totalPages-1)}
                         >
                           Last
                         </button>
