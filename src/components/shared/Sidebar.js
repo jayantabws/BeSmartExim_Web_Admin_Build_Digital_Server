@@ -49,6 +49,7 @@ class Sidebar extends Component {
       {path:'/activitylog', state: 'activitylogMenuOpen'},
       {path:'/countries', state: 'countryMenuOpen'},
       {path:'/contacts', state: 'contactMenuOpen'},
+      {path:'/sitesetting', state: 'siteSettingMenuOpen'},
     ];
 
     dropdownPaths.forEach((obj => {
@@ -225,6 +226,23 @@ class Sidebar extends Component {
               <div>
                 <ul className="nav flex-column sub-menu">
                   <li className="nav-item"> <Link className={ this.isPathActive('/contacts/contactList') ? 'nav-link active' : 'nav-link' } to="/contacts/contactList"><Trans>Contact List</Trans></Link></li>
+                </ul>
+              </div>
+            </Collapse>            
+          </li>
+
+             <li className={ this.isPathActive('/sitesetting') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+            <div className={ this.state.siteSettingMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('siteSettingMenuOpen') } data-toggle="collapse">
+              <span className="menu-icon">
+                <i className="mdi mdi-table-large"></i>
+              </span>
+              <span className="menu-title"><Trans>Site Setting</Trans></span>
+              <i className="menu-arrow"></i>
+            </div>
+            <Collapse in={ this.state.siteSettingMenuOpen }>
+              <div>
+                <ul className="nav flex-column sub-menu">
+                  <li className="nav-item"> <Link className={ this.isPathActive('/sitesetting/siteSetting') ? 'nav-link active' : 'nav-link' } to="/sitesetting/siteSetting"><Trans>Site Setting</Trans></Link></li>
                 </ul>
               </div>
             </Collapse>            

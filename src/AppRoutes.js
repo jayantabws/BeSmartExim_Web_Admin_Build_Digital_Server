@@ -46,7 +46,7 @@ const Countries = lazy(() => import('./components/countries/Countries'));
 const CreateCountry = lazy(() => import('./components/countries/CreateCountry'));
 
 const Contacts = lazy(() => import('./components/contacts/Contacts'));
-
+const SiteSetting = lazy(() => import('./components/sitesetting/SiteSetting'));
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route {...rest} render={props => isAuthenticated() ? (
@@ -107,6 +107,7 @@ const AppRoutes = () => {
             <PrivateRoute path="/countries/createCountry" component={ CreateCountry } />
             <PrivateRoute path="/countries/countryList" component={ Countries } />
             <PrivateRoute path="/contacts/contactList" component={ Contacts } />
+            <PrivateRoute path="/sitesetting/siteSetting" component={ SiteSetting } />
             <Redirect from="*" to="/error-404" />
           </Switch>
       </Suspense>
