@@ -21,6 +21,7 @@ const UserSubscriptionDetails = (props) => {
       url: `masterdata-management/subscription/${subscriptionId}`,    
     })
       .then(res => {
+        console.log("RES Details",res)
         setSubscriptionDetails(res.data)
       })
       .catch(err => {
@@ -88,6 +89,11 @@ const UserSubscriptionDetails = (props) => {
                     <tr>
                       <td>Allowed Chapter</td>
                       <td colSpan={2}>{props.rowData.allowedChapter ? props.rowData.allowedChapter : "None"}</td>
+                    </tr>
+
+                    <tr>
+                      <td>Indepth Access</td>
+                      <td colSpan={2}>{ props.rowData.indepthAccess && props.rowData.indepthAccess=='Y' ? 'YES' : 'NO' }</td>
                     </tr>
                   </tbody>
                   

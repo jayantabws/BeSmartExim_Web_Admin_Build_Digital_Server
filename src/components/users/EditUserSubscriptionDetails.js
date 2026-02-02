@@ -41,7 +41,9 @@ const EditUserSubscriptionDetails = (props) => {
     ticketManager: props.rowData.ticketManager,
     displayFields: props.rowData.displayFields,
     countryId : props.rowData.countries,
-    allowedChapter : props.rowData.allowedChapter
+    allowedChapter : props.rowData.allowedChapter,
+    indepthAccess:props.rowData.indepthAccess
+    
   };
   
 
@@ -64,7 +66,8 @@ const EditUserSubscriptionDetails = (props) => {
         "ticketManager": values.ticketManager,
         "displayFields": values.displayFields,
         "countryId" : values.countryId,
-        "allowedChapter" : values.allowedChapter
+        "allowedChapter" : values.allowedChapter,
+        "indepthAccess":values.indepthAccess
       }
       AxiosUser({
         method: "PUT",
@@ -363,6 +366,26 @@ const EditUserSubscriptionDetails = (props) => {
                       }}
                     />
                     {touched.allowedChapter && errors.allowedChapter && (<p className="error">{errors.allowedChapter}</p>)}
+                  </div>
+
+
+                    <div className="form-group">
+                  <label><b>Indepth Access</b></label>
+                    <Field
+                      name="indepthAccess"
+                      component="select"
+                      className={`form-control ${touched.indepthAccess && errors.indepthAccess ? "is-invalid" : ""}`}
+                      autoComplete="off"      
+                      onChange={event => {
+                        setFieldValue("indepthAccess", event.target.value);
+                      }}
+                    >    
+                      <option value= "" >Please Select</option>
+                      <option value= "Y" >YES</option>
+                      <option value= "N" >NO</option>
+                      
+                      {touched.indepthAccess && errors.indepthAccess && (<p className="error">{errors.indepthAccess}</p>)}
+                    </Field>   
                   </div>
                   
                   <button type="submit"  className="btn btn-primary">Update</button>
