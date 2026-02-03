@@ -153,7 +153,7 @@ class Sidebar extends Component {
             <Collapse in={ this.state.subscriptionMenuOpen }>
               <div>
                 <ul className="nav flex-column sub-menu">
-                  <li className="nav-item"> <Link className={ this.isPathActive('/subscription/editSubscription') ? 'nav-link active' : 'nav-link' } to="/subscription/editSubscription"><Trans>Edit Subscription</Trans></Link></li>
+                  <li className="nav-item"> <Link className={ this.isPathActive('/subscription/editsubscription') ? 'nav-link active' : 'nav-link' } to="/subscription/editsubscription"><Trans>Edit Subscription</Trans></Link></li>
                 </ul>
               </div>
             </Collapse>

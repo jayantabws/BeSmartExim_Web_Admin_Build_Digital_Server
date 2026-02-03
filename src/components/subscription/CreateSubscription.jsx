@@ -17,7 +17,7 @@ const newInitialValues = {
   price: 0,
   validityDay : 0,
   isCustom: "0",
-  isActive: "",
+  isActive: "Y",
   countryId : "",
   continentId: "",
   DATA_ACCCESS: "",
@@ -31,6 +31,8 @@ const newInitialValues = {
   SUB_USER: "",
   DISPLAY_FIELDS: "",
   QUERY_PER_DAY : "",
+  indepthAccess:"N",
+  isCustom:"N"
 
 }
 
@@ -78,6 +80,7 @@ const Users = () => {
       "isCustom": values.isCustom,
       "isActive": values.isActive,
       "countryId": values.countryId,
+      "indepthAccess":values.indepthAccess,
       "continentId": [],
       "otherAttributes": {
         "DATA_ACCCESS": {
@@ -315,6 +318,28 @@ const Users = () => {
                                           </FormGroup>
                                       </div>
                                   </div>
+
+
+                                       <div className="form-group">
+                                                          <label>Indepth Section Access</label>
+                                                            <Field
+                                                              name="indepthAccess"
+                                                              component="select"
+                                                              className={`form-control ${touched.indepthAccess && errors.indepthAccess ? "is-invalid" : ""}`}
+                                                              autoComplete="off"      
+                                                              onChange={event => {
+                                                                setFieldValue("indepthAccess", event.target.value);
+                                                              }}
+                                                            >
+                                                                  <option value="" >Please Select</option>
+                                                                  <option value="Y" >YES</option>
+                                                                  <option value="N" selected>NO</option>
+                                                                 
+                                                              {touched.indepthAccess && errors.indepthAccess && (<p className="error">{errors.indepthAccess}</p>)}
+                                                            </Field>   
+                                                          </div>
+
+
                                   </div>
                                   </div>
 

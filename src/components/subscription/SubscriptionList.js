@@ -68,6 +68,7 @@ const SubscriptionList = () => {
       }
     })
       .then(res => {
+        console.log("Subscriptions Lista",res.data.subscriptionList);
         setSubscriptionList(res.data.subscriptionList);
       })
       .catch(err => {
@@ -91,6 +92,7 @@ const SubscriptionList = () => {
   
 
     const actionFormatter = (cell, row) => {
+     // alert(cell, row);
       return (
         <div>          
           <i className="bi bi-pencil-square">
