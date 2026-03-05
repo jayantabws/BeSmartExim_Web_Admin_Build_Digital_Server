@@ -2,10 +2,12 @@ import React, { Component,useState, useRef, useCallback, useEffect } from 'react
 import AxiosUser from '../shared/AxiosUser';
 import imagePencil from '../../assets/images/pencil-square.svg';
 import deleteIcon from '../../assets/images/delete.svg';
+import permissionIcon from '../../assets/images/permission.svg';
 import Swal from 'sweetalert2';
 import EditeUser from './EditUser';
 import { Row, Col, Modal, Button, FormGroup } from 'react-bootstrap';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
+import UpdatePermission from './UpdatePermission';
 
 
 
@@ -17,6 +19,9 @@ const AdminUsers = () => {
 
   const [sortName, setSortName] = useState(undefined);
   const [sortOrder, setSortOrder] = useState(undefined);
+
+  const [permissionModel, setPermissionModel] = useState(false);
+  const [permissionData, setPermissionData] = useState([]);
 
   
   function onSortChange(sortName, sortOrder) {
@@ -45,6 +50,7 @@ const AdminUsers = () => {
   }
 
   const editUser = (item) => {
+   // console.log("item", item);
     setRowData(item)
     setShowModal(true)
   }
@@ -89,10 +95,35 @@ const AdminUsers = () => {
     })
   }
 
+
+  const updatePermissionFun = (item) => {
+     console.log("Permission item", item);
+
+     AxiosUser({
+      method: "GET",
+      url: `user-management/permission/get/${item.id}`,    
+    })
+      .then(res => {
+        console.log("Permission data Admin", res.data);
+         setPermissionData(res.data)
+       // setSubscriptionList(res.data.subscriptionList)
+      })
+      .catch(err => {
+         setPermissionData([])
+        //setSubscriptionList([])
+      });
+    
+     setPermissionModel(true)
+  }
+
   
 
   const handleClose = (e) => {
     setShowModal(false)
+  }
+
+  const handleClosePermission = (e) => {
+    setPermissionModel(false)
   }
 
   const modalSubmit = (e) => {
@@ -108,8 +139,9 @@ const AdminUsers = () => {
     return (<div><i className="bi bi-pencil-square"><img src={imagePencil} 
              onClick={(e)=> {editUser(row)}}/></i> &nbsp;&nbsp;&nbsp;
              <i className="bi bi-pencil-square"><img src={deleteIcon} 
-             onClick={(e)=> {deleteUser(row)}}/></i>
-             </div>)
+             onClick={(e)=> {deleteUser(row)}}/></i>&nbsp;&nbsp;&nbsp;
+             <i className="bi bi-person-check" ><img onClick={(e)=> {updatePermissionFun(row)}} src={permissionIcon} /></i>
+            </div>)
   }
 
   const statusFormatter = (cell,row) => {
@@ -173,6 +205,21 @@ const AdminUsers = () => {
                     />                       
                     </Modal.Body>
                 </Modal>
+
+                    <Modal className="customModal brandModal" bsSize="md"
+                    show={permissionModel}
+                    onHide={handleClosePermission}>
+                    <Modal.Header closeButton className="custmModlHead">
+                        <div ><h3>Update Admin Permission </h3> </div>
+                    </Modal.Header>
+                    <Modal.Body>                                           
+                    
+
+                    <UpdatePermission  permissionData={permissionData} handleClosePermission={handleClosePermission} />
+                    </Modal.Body>
+                </Modal>
+
+                
         </div>
       </div>
     )

@@ -2,11 +2,15 @@ import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { Collapse, Dropdown } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
-
+import AxiosUser from '../shared/AxiosUser';
 
 class Sidebar extends Component {
 
   state = {fullName: ""};
+  state = {
+      permissions: {}
+    };
+
 
   toggleMenuState(menuState) {
     if (this.state[menuState]) {
@@ -25,6 +29,27 @@ class Sidebar extends Component {
     if (this.props.location !== prevProps.location) {
       this.onRouteChanged();
     }
+   const storedUserId = sessionStorage.getItem("userId");
+   // console.log("Stored User ID:", storedUserId);
+     // let userId = storedUserId ? storedUserId : 105;
+      //alert("User ID from sidebar"+ userId);
+       if (storedUserId) {
+      AxiosUser({
+        method: "GET",
+        url: `user-management/permission/get/${storedUserId}`
+      })
+      .then(res => {
+        this.setState({
+          permissions: res.data
+        });
+        console.log("Permissions from navbar", res.data);
+     //   alert("Permissions from navbar"+ JSON.stringify(res.data));
+      })
+      .catch(err => {
+        console.log("API Error:", err);
+      });
+    }
+
   }
 
 
@@ -60,6 +85,8 @@ class Sidebar extends Component {
  
   }
 
+  
+
   render () {
     
     return (
@@ -79,7 +106,20 @@ class Sidebar extends Component {
             </Link>
           </li>
           
+      
+
+       
+
         
+
+         
+        
+        
+      
+       
+
+       {this.state.permissions.users === "Y" && (
+          
           <li className={ this.isPathActive('/users') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
             <div className={ this.state.userMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('userMenuOpen') } data-toggle="collapse">
               <span className="menu-icon">
@@ -103,7 +143,9 @@ class Sidebar extends Component {
               </div>
             </Collapse>
           </li>
-
+      )}
+       
+        {this.state.permissions.adminUsers === "Y" && (
           <li className={ this.isPathActive('/adminUsers') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
             <div className={ this.state.userMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('adminUserMenuOpen') } data-toggle="collapse">
               <span className="menu-icon">
@@ -127,7 +169,9 @@ class Sidebar extends Component {
               </div>
             </Collapse>            
           </li> 
+        )}
 
+          {this.state.permissions.subscriptions === "Y" && ( 
           <li className={ this.isPathActive('/subscription') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
             <div className={ this.state.subscriptionMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('subscriptionMenuOpen') } data-toggle="collapse">
               <span className="menu-icon">
@@ -158,7 +202,9 @@ class Sidebar extends Component {
               </div>
             </Collapse> */}
           </li>
+        )}
 
+          {this.state.permissions.activityLog === "Y" && (
           <li className={ this.isPathActive('/activitylog') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
             <div className={ this.state.activitylogMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('activitylogMenuOpen') } data-toggle="collapse">
               <span className="menu-icon">
@@ -189,7 +235,10 @@ class Sidebar extends Component {
               </div>
             </Collapse>
           </li>
+        )}
 
+
+         {this.state.permissions.countries === "Y" && (
           <li className={ this.isPathActive('/countries') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
             <div className={ this.state.countryMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('countryMenuOpen') } data-toggle="collapse">
               <span className="menu-icon">
@@ -213,7 +262,9 @@ class Sidebar extends Component {
               </div>
             </Collapse>
           </li>
+        )}
 
+         {this.state.permissions.contacts === "Y" && (
           <li className={ this.isPathActive('/contacts') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
             <div className={ this.state.contactMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('contactMenuOpen') } data-toggle="collapse">
               <span className="menu-icon">
@@ -230,7 +281,9 @@ class Sidebar extends Component {
               </div>
             </Collapse>            
           </li>
+          )}
 
+            {this.state.permissions.siteSettings === "Y" && (
              <li className={ this.isPathActive('/sitesetting') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
             <div className={ this.state.siteSettingMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('siteSettingMenuOpen') } data-toggle="collapse">
               <span className="menu-icon">
@@ -247,7 +300,7 @@ class Sidebar extends Component {
               </div>
             </Collapse>            
           </li>
-         
+          )}
         </ul>
       </nav>
     );
