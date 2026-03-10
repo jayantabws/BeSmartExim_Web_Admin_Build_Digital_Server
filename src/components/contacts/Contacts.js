@@ -5,6 +5,7 @@ import EditContact from './EditContact';
 import { Modal } from 'react-bootstrap';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import moment from 'moment';
+import './Contacts.css';
 
 const Contacts = () => {
   const [contactList, setContactList] = useState([]);

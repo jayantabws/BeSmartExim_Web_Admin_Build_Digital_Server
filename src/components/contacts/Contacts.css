@@ -1,0 +1,74 @@
+.contact-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.contact-table-wrapper .react-bs-table-container {
+  min-width: 1900px;
+}
+
+.contact-table-wrapper table {
+  min-width: 1900px;
+  table-layout: fixed !important;
+}
+
+.contact-table-wrapper .react-bs-container-header table,
+.contact-table-wrapper .react-bs-container-body table {
+  width: 1900px !important;
+  table-layout: fixed !important;
+  margin: 0 !important;
+}
+
+.contact-table-wrapper .react-bs-container-header th,
+.contact-table-wrapper .react-bs-container-body td {
+  box-sizing: border-box;
+}
+
+.contact-table thead th {
+  padding: 12px 10px !important;
+  vertical-align: middle !important;
+  white-space: nowrap;
+  font-weight: 600;
+  text-align: left;
+}
+
+.contact-table tbody td {
+  padding: 10px !important;
+  vertical-align: middle !important;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.contact-table th,
+.contact-table td {
+  border: 1px solid #dee2e6 !important;
+}
+
+.table-cell-text {
+  display: block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.center-cell {
+  width: 100%;
+  text-align: center;
+}
+
+.action-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.action-icon {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
