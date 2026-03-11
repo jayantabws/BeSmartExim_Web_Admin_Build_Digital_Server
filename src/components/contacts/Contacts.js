@@ -15,26 +15,62 @@ const Contacts = () => {
   const [sortName, setSortName] = useState(undefined);
   const [sortOrder, setSortOrder] = useState(undefined);
 
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0); // backend page starts from 0
+  const [pageSize] = useState(20);
+
   function onSortChange(sortName, sortOrder) {
     setSortName(sortName);
     setSortOrder(sortOrder);
   }
 
   useEffect(() => {
-    getContacts();
+    getTotalCount();
   }, []);
 
-  const getContacts = () => {
+  useEffect(() => {
+    getContacts(currentPage);
+  }, [currentPage]);
+
+  const getTotalCount = () => {
     AxiosACT({
-      method: "GET",
-      url: `/activity-management/listcontact/all`
+      method: 'GET',
+      url: `/activity-management/listcontact/count`
     })
       .then((res) => {
-        setContactList(res.data.contactList || []);
+        setTotalCount(res?.data?.totalCount || res?.data || 0);
       })
       .catch((err) => {
-        console.log("Err", err);
+        console.log('Count Error', err);
+        setTotalCount(0);
       });
+  };
+
+  const getContacts = (pageNumber = 0) => {
+    setLoading(true);
+
+    AxiosACT({
+      method: 'GET',
+      url: `/activity-management/listcontact/all`,
+      params: {
+        pageNumber: pageNumber
+      }
+    })
+      .then((res) => {
+        setContactList(res?.data?.contactList || []);
+      })
+      .catch((err) => {
+        console.log('Err', err);
+        setContactList([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const onPageChange = (page, sizePerPage) => {
+    setCurrentPage(page - 1); // UI page starts from 1, backend starts from 0
   };
 
   const editContact = (item) => {
@@ -48,13 +84,14 @@ const Contacts = () => {
 
   const modalSubmit = () => {
     setShowModal(false);
-    getContacts();
+    getContacts(currentPage);
+    getTotalCount();
   };
 
   const textCellFormatter = (cell) => {
     return (
-      <div className="table-cell-text" title={cell || ""}>
-        {cell || "-"}
+      <div className="table-cell-text" title={cell || ''}>
+        {cell || '-'}
       </div>
     );
   };
@@ -74,18 +111,34 @@ const Contacts = () => {
 
   const dateCreated = (cell, row) => {
     return row.createdDate
-      ? moment(row.createdDate).format("MMM. DD, YYYY")
-      : "-";
+      ? moment(row.createdDate).format('MMM. DD, YYYY')
+      : '-';
   };
 
   const indexN = (cell, row, enumObject, index) => {
-    return <div className="center-cell">{index + 1}</div>;
+    return (
+      <div className="center-cell">
+        {currentPage * pageSize + index + 1}
+      </div>
+    );
   };
 
   const options = {
+    page: currentPage + 1,
+    sizePerPage: pageSize,
+    paginationSize: 5,
+    pageStartIndex: 1,
+    prePage: '<',
+    nextPage: '>',
+    firstPage: '<<',
+    lastPage: '>>',
+    hideSizePerPage: true,
+    alwaysShowAllBtns: true,
+    withFirstAndLast: true,
     sortName: sortName,
     sortOrder: sortOrder,
-    onSortChange: onSortChange
+    onSortChange: onSortChange,
+    onPageChange: onPageChange
   };
 
   return (
@@ -115,8 +168,10 @@ const Contacts = () => {
                     data={contactList}
                     striped
                     hover
-                    pagination={true}
+                    pagination
                     search
+                    remote={true}
+                    fetchInfo={{ dataTotalSize: totalCount }}
                     options={options}
                     tableClassName="contact-table"
                   >
@@ -125,8 +180,8 @@ const Contacts = () => {
                       isKey
                       dataField="id"
                       dataFormat={indexN}
-                      thStyle={{ textAlign: "center", verticalAlign: "middle" }}
-                      tdStyle={{ textAlign: "center", verticalAlign: "middle" }}
+                      thStyle={{ textAlign: 'center', verticalAlign: 'middle' }}
+                      tdStyle={{ textAlign: 'center', verticalAlign: 'middle' }}
                     >
                       Sl.
                     </TableHeaderColumn>
@@ -136,8 +191,8 @@ const Contacts = () => {
                       dataField="companyName"
                       dataFormat={textCellFormatter}
                       dataSort={true}
-                      thStyle={{ textAlign: "left", verticalAlign: "middle" }}
-                      tdStyle={{ textAlign: "left", verticalAlign: "middle" }}
+                      thStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
+                      tdStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
                     >
                       Company Name
                     </TableHeaderColumn>
@@ -147,8 +202,8 @@ const Contacts = () => {
                       dataField="address"
                       dataFormat={textCellFormatter}
                       dataSort={true}
-                      thStyle={{ textAlign: "left", verticalAlign: "middle" }}
-                      tdStyle={{ textAlign: "left", verticalAlign: "middle" }}
+                      thStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
+                      tdStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
                     >
                       Address
                     </TableHeaderColumn>
@@ -158,8 +213,8 @@ const Contacts = () => {
                       dataField="email"
                       dataFormat={textCellFormatter}
                       dataSort={true}
-                      thStyle={{ textAlign: "left", verticalAlign: "middle" }}
-                      tdStyle={{ textAlign: "left", verticalAlign: "middle" }}
+                      thStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
+                      tdStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
                     >
                       Email
                     </TableHeaderColumn>
@@ -169,8 +224,8 @@ const Contacts = () => {
                       dataField="mobile"
                       dataFormat={textCellFormatter}
                       dataSort={true}
-                      thStyle={{ textAlign: "left", verticalAlign: "middle" }}
-                      tdStyle={{ textAlign: "left", verticalAlign: "middle" }}
+                      thStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
+                      tdStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
                     >
                       Mobile
                     </TableHeaderColumn>
@@ -180,8 +235,8 @@ const Contacts = () => {
                       dataField="website"
                       dataFormat={textCellFormatter}
                       dataSort={true}
-                      thStyle={{ textAlign: "left", verticalAlign: "middle" }}
-                      tdStyle={{ textAlign: "left", verticalAlign: "middle" }}
+                      thStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
+                      tdStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
                     >
                       Website
                     </TableHeaderColumn>
@@ -191,8 +246,8 @@ const Contacts = () => {
                       dataField="creatorEmail"
                       dataFormat={textCellFormatter}
                       dataSort={true}
-                      thStyle={{ textAlign: "left", verticalAlign: "middle" }}
-                      tdStyle={{ textAlign: "left", verticalAlign: "middle" }}
+                      thStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
+                      tdStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
                     >
                       Creator Email
                     </TableHeaderColumn>
@@ -202,8 +257,8 @@ const Contacts = () => {
                       dataField="creatorCompany"
                       dataFormat={textCellFormatter}
                       dataSort={true}
-                      thStyle={{ textAlign: "left", verticalAlign: "middle" }}
-                      tdStyle={{ textAlign: "left", verticalAlign: "middle" }}
+                      thStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
+                      tdStyle={{ textAlign: 'left', verticalAlign: 'middle' }}
                     >
                       Creator Company Name
                     </TableHeaderColumn>
@@ -213,8 +268,8 @@ const Contacts = () => {
                       dataField="createdDate"
                       dataFormat={dateCreated}
                       dataSort={true}
-                      thStyle={{ textAlign: "center", verticalAlign: "middle" }}
-                      tdStyle={{ textAlign: "center", verticalAlign: "middle" }}
+                      thStyle={{ textAlign: 'center', verticalAlign: 'middle' }}
+                      tdStyle={{ textAlign: 'center', verticalAlign: 'middle' }}
                     >
                       Date Created
                     </TableHeaderColumn>
@@ -223,12 +278,18 @@ const Contacts = () => {
                       width="90"
                       dataField="action"
                       dataFormat={actionFormatter}
-                      thStyle={{ textAlign: "center", verticalAlign: "middle" }}
-                      tdStyle={{ textAlign: "center", verticalAlign: "middle" }}
+                      thStyle={{ textAlign: 'center', verticalAlign: 'middle' }}
+                      tdStyle={{ textAlign: 'center', verticalAlign: 'middle' }}
                     >
                       Action
                     </TableHeaderColumn>
                   </BootstrapTable>
+
+                  {loading && (
+                    <div style={{ padding: '10px 0' }}>
+                      Loading...
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
