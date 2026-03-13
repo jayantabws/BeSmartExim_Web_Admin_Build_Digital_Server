@@ -578,8 +578,12 @@ const DownloadTracker = () => {
                     <div className="d-flex justify-content-between align-items-center mt-4 p-3" style={{ backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
                       <div>
                         <span className="text-muted">
-                          Showing <strong>{currentPage  * pageSize + 1}</strong> to{" "}
-                          <strong>{Math.min(currentPage * pageSize, totalCount)}</strong> of{" "}
+                        
+
+                          Showing <strong>{currentPage * pageSize + 1}</strong> to{" "}
+<strong>{Math.min((currentPage + 1) * pageSize, totalCount)}</strong>
+
+                          of{" "}
                           <strong>{totalCount}</strong> downloads
                         </span>
                       </div>

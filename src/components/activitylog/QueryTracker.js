@@ -521,11 +521,21 @@ const QueryTracker = () => {
                   {/* Custom Pagination */}
                   {totalCount > 0 && (
                     <div className="d-flex justify-content-between align-items-center mt-3">
-                      <span>
+                      {/* <span>
                         Showing {currentPage * pageSize + 1} to{" "}
                         {Math.min(currentPage * pageSize, totalCount)} of{" "}
                         {totalCount} results
-                      </span>
+                      </span> */}
+
+                      <span className="text-muted">
+                        
+
+                          Showing <strong>{currentPage * pageSize + 1}</strong> to{" "}
+<strong>{Math.min((currentPage + 1) * pageSize, totalCount)}</strong>
+
+                          of{" "}
+                          <strong>{totalCount}</strong> downloads
+                        </span>
                       
                       <div className="d-flex align-items-center">
                         {/* First Page */}

@@ -123,7 +123,7 @@ const LoginTracker = () => {
   };
 
   const handleSubmit = (values) => {
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage(0); // Reset to first page when filtering
     setFilterUserId(values.userId);
     setFilterFromDate(values.fromDate);
     setFilterToDate(values.toDate);
@@ -134,6 +134,8 @@ const LoginTracker = () => {
     handleSubmitWithPage(values.userId, values.fromDate, values.toDate, 0);
     getTotalCount(values.userId, values.fromDate, values.toDate);
   };
+
+
 
   const formatDateTime = (dateString, timeString) => {
     // If timeString contains a full ISO datetime, parse it
@@ -263,13 +265,13 @@ const LoginTracker = () => {
   };
 
   const handlePageChange = (page) => {
-    if (page >= 0 && page <= Math.ceil(totalCount / pageSize)) {
+   if (page >= 0 && page < totalPages) {
       handleSubmitWithPage(filterUserId, filterFromDate, filterToDate, page);
     }
   };
 
   // Generate page numbers for pagination
-  const generatePageNumbers = () => {
+ /* const generatePageNumbers = () => {
     const totalPages = Math.ceil(totalCount / pageSize);
     const pageNumbers = [];
     const maxVisiblePages = 5;
@@ -286,7 +288,26 @@ const LoginTracker = () => {
     }
     
     return pageNumbers;
-  };
+  }; */
+
+  const generatePageNumbers = () => {
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const pageNumbers = [];
+  const maxVisiblePages = 5;
+
+  let startPage = Math.max(0, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+
+  if (endPage - startPage < maxVisiblePages - 1) {
+    startPage = Math.max(0, endPage - maxVisiblePages + 1);
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    pageNumbers.push(i);
+  }
+
+  return pageNumbers;
+};
 
   const indexN = (cell, row, enumObject, index) => {
     return <div>{currentPage * pageSize + index + 1}</div>;
@@ -502,7 +523,7 @@ const LoginTracker = () => {
                           }
                         });
                         
-                        setCurrentPage(1);
+                        setCurrentPage(0);
                         setFilterUserId("");
                         setFilterFromDate(defaultFromDate);
                         setFilterToDate(defaultToDate);
@@ -566,8 +587,8 @@ const LoginTracker = () => {
                     <div className="d-flex justify-content-between align-items-center mt-4 p-3" style={{ backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
                       <div>
                         <span className="text-muted">
-                          Showing <strong>{(currentPage - 1) * pageSize + 1}</strong> to{" "}
-                          <strong>{Math.min(currentPage * pageSize, totalCount)}</strong> of{" "}
+                        Showing <strong>{currentPage * pageSize + 1}</strong> to{" "}
+<strong>{Math.min((currentPage + 1) * pageSize, totalCount)}</strong> of{" "}
                           <strong>{totalCount}</strong> login records
                         </span>
                       </div>
@@ -575,7 +596,7 @@ const LoginTracker = () => {
                       <div className="d-flex align-items-center">
                         <button
                           className="btn btn-sm btn-outline-primary me-1"
-                          disabled={currentPage === 1}
+                          disabled={currentPage === 0}
                           onClick={() => handlePageChange(0)}
                           style={{ marginRight: '5px' }}
                           title="First Page"
@@ -594,24 +615,22 @@ const LoginTracker = () => {
                         </button>
 
                         <div className="mx-2">
-                          {generatePageNumbers().map((pageNum) => (
-                            <button
-                              key={pageNum}
-                              className={`btn btn-sm ${
-                                currentPage === pageNum 
-                                  ? 'btn-primary' 
-                                  : 'btn-outline-primary'
-                              }`}
-                              onClick={() => handlePageChange(pageNum)}
-                              style={{ 
-                                marginRight: '3px', 
-                                minWidth: '35px',
-                                fontWeight: currentPage === pageNum ? 'bold' : 'normal'
-                              }}
-                            >
-                              {pageNum}
-                            </button>
-                          ))}
+                        {generatePageNumbers().map((pageNum) => (
+  <button
+    key={pageNum}
+    className={`btn btn-sm ${
+      currentPage === pageNum ? 'btn-primary' : 'btn-outline-primary'
+    }`}
+    onClick={() => handlePageChange(pageNum)}
+    style={{ 
+      marginRight: '3px', 
+      minWidth: '35px',
+      fontWeight: currentPage === pageNum ? 'bold' : 'normal'
+    }}
+  >
+    {pageNum + 1}
+  </button>
+))}
                         </div>
 
                         <button
@@ -626,7 +645,7 @@ const LoginTracker = () => {
 
                         <button
                           className="btn btn-sm btn-outline-primary"
-                          disabled={currentPage === totalPages}
+                        disabled={currentPage === totalPages - 1}
                           onClick={() => handlePageChange(totalPages-1)}
                           title="Last Page"
                         >
