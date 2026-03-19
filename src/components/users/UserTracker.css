@@ -1,0 +1,46 @@
+.custom-tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.tab-btn {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 25px;
+  background: #f1f3f5;
+  color: #555;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+.tab-btn:hover {
+  background: #e9ecef;
+}
+
+/* Active (Green) */
+.tab-active {
+  background: #198754;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(25, 135, 84, 0.3);
+}
+
+/* Deleted (Red) */
+.tab-deleted {
+  background: #dc3545;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(220, 53, 69, 0.3);
+}
+
+/* Count badge */
+.count-badge {
+  margin-left: 8px;
+  background: #fff;
+  color: #198754;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.count-badge.danger {
+  color: #dc3545;
+}

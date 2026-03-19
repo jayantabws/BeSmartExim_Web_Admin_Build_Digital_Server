@@ -75,6 +75,9 @@ class Sidebar extends Component {
       {path:'/countries', state: 'countryMenuOpen'},
       {path:'/contacts', state: 'contactMenuOpen'},
       {path:'/sitesetting', state: 'siteSettingMenuOpen'},
+
+       {path:'/usertracker', state: 'userTrackerMenuOpen'},
+      
     ];
 
     dropdownPaths.forEach((obj => {
@@ -301,6 +304,25 @@ class Sidebar extends Component {
             </Collapse>            
           </li>
           )}
+
+ {this.state.permissions.userTracker === "Y" && (
+             <li className={ this.isPathActive('/usertracker') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+            <div className={ this.state.siteSettingMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('userTrackerMenuOpen') } data-toggle="collapse">
+              <span className="menu-icon">
+                <i className="mdi mdi-table-large"></i>
+              </span>
+              <span className="menu-title"><Trans>User Tracker</Trans></span>
+              <i className="menu-arrow"></i>
+            </div>
+            <Collapse in={ this.state.userTrackerMenuOpen }>
+              <div>
+                <ul className="nav flex-column sub-menu">
+                  <li className="nav-item"> <Link className={ this.isPathActive('/users/usertracker') ? 'nav-link active' : 'nav-link' } to="/users/usertracker"><Trans>User Tracker</Trans></Link></li>
+                </ul>
+              </div>
+            </Collapse>            
+          </li>
+            )}
         </ul>
       </nav>
     );

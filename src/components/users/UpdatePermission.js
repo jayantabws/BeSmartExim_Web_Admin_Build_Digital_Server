@@ -79,7 +79,8 @@ const UpdatePermission = (props) => {
     { key: "activityLog", label: "Activity Log" },
     { key: "countries", label: "Countries" },
     { key: "contacts", label: "Contacts" },
-    { key: "siteSettings", label: "Site Settings" }
+    { key: "siteSettings", label: "Site Settings" },
+    {key:"userTracker",label: "User Tracker"}
   ];
 
   return (

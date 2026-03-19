@@ -180,7 +180,7 @@ const AdminUsers = () => {
                     options={ options }
                 >
                     <TableHeaderColumn width='70' isKey dataField='id' dataFormat={ indexN }>Sl No</TableHeaderColumn>
-                    <TableHeaderColumn width='150' dataField='firstname' dataFormat={ fullName } dataSort={ true }>Name1</TableHeaderColumn>
+                    <TableHeaderColumn width='150' dataField='firstname' dataFormat={ fullName } dataSort={ true }>Name</TableHeaderColumn>
                     <TableHeaderColumn width='300' dataField='email' dataSort={ true }>Email</TableHeaderColumn>
                     <TableHeaderColumn width='150' dataField='mobile' dataSort={ true }>Mobile</TableHeaderColumn>
                     <TableHeaderColumn width='150' dataField='isActive' dataFormat={ statusFormatter } dataSort={ true }>Status</TableHeaderColumn>
