@@ -44,3 +44,8 @@
 .count-badge.danger {
   color: #dc3545;
 }
+
+.activity-cell {
+  max-width: 200px;
+  white-space: normal;
+}

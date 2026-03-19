@@ -3,7 +3,12 @@ import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import Select from "react-select";
 import AxiosUser from '../shared/AxiosUser';
+import { Row, Col, Modal, Button, FormGroup } from 'react-bootstrap';
 import './UserTracker.css';
+import LoginTrackerModel from './LoginTrackerModel';
+import QueryTrackerModel from './QueryTrackerModel';
+import DownloadTrackerModel from './DownloadTrackerModel';
+
 const validateForm = Yup.object().shape({
   userId: Yup.string().required("Please select user"),
 });
@@ -25,6 +30,10 @@ const UserTracker = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(10);
   const [filterUserId, setFilterUserId] = useState("");
+
+  const [rowData, setRowData] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedModelType,setSelectedModelType]=useState('');
 
   useEffect(() => {
     getUsers();
@@ -79,10 +88,10 @@ const UserTracker = () => {
         },
       });
 
-      console.log("=== COUNT API DEBUG ===");
-      console.log("Full response:", res);
-      console.log("Response data:", res?.data);
-      console.log("Response data type:", typeof res?.data);
+      // console.log("=== COUNT API DEBUG ===");
+      // console.log("Full response:", res);
+      // console.log("Response data:", res?.data);
+      // console.log("Response data type:", typeof res?.data);
       
       // Try different response structures
       let count = 0;
@@ -92,9 +101,9 @@ const UserTracker = () => {
         count = res.data;
       }
     
-      console.log("Extracted count:", count);
-      console.log("=======================");
-      if(isDelete=='N'){
+      // console.log("Extracted count:", count);
+      // console.log("=======================");
+      if(isDelete==='N'){
         setTotalNonDeletedCount(count);
         setTotalDeletedCount(0);
       }else{
@@ -104,7 +113,7 @@ const UserTracker = () => {
       
       setTotalCount(count);
     } catch (err) {
-      console.log("Count API error", err);
+     // console.log("Count API error", err);
       setTotalCount(0);
       setTotalNonDeletedCount(0);
         setTotalDeletedCount(0);
@@ -115,11 +124,11 @@ const UserTracker = () => {
     try {
       setLoading(true);
       
-      console.log("Fetching list with params:", {
-        uplineId,
-        pageNumber,
-        isDelete
-      });
+      // console.log("Fetching list with params:", {
+      //   uplineId,
+      //   pageNumber,
+      //   isDelete
+      // });
 
       const res = await AxiosUser({
         method: "GET",
@@ -131,29 +140,29 @@ const UserTracker = () => {
         },
       });
 
-      console.log("=== LIST API DEBUG ===");
-      console.log("List response data:", res?.data);
+      // console.log("=== LIST API DEBUG ===");
+      // console.log("List response data:", res?.data);
       
       // Try different response structures for the list
-      let list = [];
-      if (Array.isArray(res?.data)) {
-        list = res.data;
-      } else if (res?.data?.userList && Array.isArray(res.data.userList)) {
-        list = res.data.userList;
-      } else if (res?.data?.data && Array.isArray(res.data.data)) {
-        list = res.data.data;
-      } else if (res?.data?.rows && Array.isArray(res.data.rows)) {
-        list = res.data.rows;
-      } else if (res?.data?.items && Array.isArray(res.data.items)) {
-        list = res.data.items;
-      }
+      let list =res.data.userList || [];
+      // if (Array.isArray(res?.data)) {
+      //   list = res.data;
+      // } else if (res?.data?.userList && Array.isArray(res.data.userList)) {
+      //   list = res.data.userList;
+      // } else if (res?.data?.data && Array.isArray(res.data.data)) {
+      //   list = res.data.data;
+      // } else if (res?.data?.rows && Array.isArray(res.data.rows)) {
+      //   list = res.data.rows;
+      // } else if (res?.data?.items && Array.isArray(res.data.items)) {
+      //   list = res.data.items;
+      // }
 
-      console.log("Extracted list length:", list.length);
-      console.log("======================");
+      // console.log("Extracted list length:", list.length);
+      // console.log("======================");
       
       setQueryList(list);
     } catch (err) {
-      console.log("List API error", err);
+     // console.log("List API error", err);
       setQueryList([]);
     } finally {
       setLoading(false);
@@ -168,22 +177,71 @@ const UserTracker = () => {
     setCurrentPage(newPage);
   };
 
+    const LoginDownloadQueryTracker = (item,type) => {
+   // console.log("item", item);
+    setRowData(item)
+    setShowModal(true)
+    setSelectedModelType(type);
+  }
+    const handleClose = (e) => {
+    setShowModal(false)
+  }
+
+
+
   // Calculate total pages
   const totalPages = Math.ceil(totalCount / pageSize);
   
-  console.log("Current State:", {
-    totalCount,
-    pageSize,
-    totalPages,
-    currentPage,
-    queryListLength: queryList.length,
-    hasNextPage: currentPage + 1 < totalPages
-  });
+  // console.log("Current State:", {
+  //   totalCount,
+  //   pageSize,
+  //   totalPages,
+  //   currentPage,
+  //   queryListLength: queryList.length,
+  //   hasNextPage: currentPage + 1 < totalPages
+  // });
 
+  const renderModelComponent=()=>{
+    switch(selectedModelType){
+      case "login":
+        return <LoginTrackerModel rowData={rowData} />
+      case "query":
+        return  <QueryTrackerModel rowData={rowData} />
+      case "download":
+        return <DownloadTrackerModel rowData={rowData}/>
+        default:
+        return <div>No component found</div>;
+    }
+  }
+
+  const getModelTitle=()=>{
+     switch(selectedModelType){
+      case "login":
+        return "Login Tracker";
+      case "query":
+        return "Query Tracker" ;
+      case "download":
+        return "Download Tracker";
+      default:
+        return "Tracker";  
+     }
+
+  }
   return (
     <div>
-      <div className="page-header mb-4">
-        <h3>User Log Tracker</h3>
+        <div className="page-header mb-4">
+        <nav aria-label="breadcrumb">
+          <ol className="breadcrumb mb-2">
+            <li className="breadcrumb-item">
+              <a href="!#" onClick={(event) => event.preventDefault()}>
+              User
+              </a>
+            </li>
+            <li className="breadcrumb-item active" aria-current="page">
+              <h3 className="page-title mb-0">User Tracker</h3>
+            </li>
+          </ol>
+        </nav>
       </div>
 
       <div className="filter-section bg-light p-3 rounded shadow-sm">
@@ -280,7 +338,7 @@ const UserTracker = () => {
                     }`}
                     onClick={() => setActiveTab("active")}
                   >
-                    ✅ Non Deleted
+                    ✅ Current Users
                     {filterUserId && totalNonDeletedCount > 0 && (
                       <span className="count-badge">{totalNonDeletedCount}</span>
                     )}
@@ -294,7 +352,7 @@ const UserTracker = () => {
                     }`}
                     onClick={() => setActiveTab("deleted")}
                   >
-                    🗑 Deleted
+                    🗑 Deleted Users
                     {filterUserId && totalDeletedCount > 0 && (
                       <span className="count-badge danger">
                         {totalDeletedCount}
@@ -322,7 +380,7 @@ const UserTracker = () => {
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan={activeTab === "deleted" ? 6 : 5} className="text-center">
+                        <td  className="text-center">
                           <div className="" role="status">
                             <span className="visually-hidden">Loading...</span>
                           </div>
@@ -338,18 +396,36 @@ const UserTracker = () => {
                           <td>{item.companyName}</td>
                         
                           <td>
-                            {activeTab === "active" ? (
-                              <span className="badge bg-success">Non Deleted</span>
+                            {item.isActive= "Y" ? (
+                              <span className="badge bg-success">Active</span>
                             ) : (
-                              <span className="badge bg-danger">Deleted</span>
+                              <span className="badge bg-danger">InActive</span>
                             )}
                           </td>
-                          <td></td>
+                          <td>
+                              {/* <a className='btn btn-xs btn-primary' onClick={()=>LoginTracker(item)}>Login Tracker</a> &nbsp;
+                              <a className='btn btn-xs btn-info'>Query Tracker</a>&nbsp;
+                              <a className='btn btn-xs btn-success'>Download Tracker</a>&nbsp; */}
+
+                              <div className="d-flex gap-2">
+    <button className="btn btn-sm btn-primary" title="Login Tracker" onClick={()=>LoginDownloadQueryTracker(item,"login")} style={{'fontSize':'30px'}}>
+      🔐
+    </button>&nbsp;&nbsp;
+
+    <button className="btn btn-sm btn-info" title="Query Tracker" onClick={()=>LoginDownloadQueryTracker(item,"query")}  style={{'fontSize':'30px'}}>
+      📄
+    </button>&nbsp;&nbsp;
+
+    <button className="btn btn-sm btn-success" title="Download" onClick={()=>LoginDownloadQueryTracker(item,"download")}  style={{'fontSize':'30px'}}>
+      ⬇
+    </button>&nbsp;
+  </div>
+                          </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={activeTab === "deleted" ? 6 : 5} className="text-center">
+                        <td className="text-center">
                           No data found
                         </td>
                       </tr>
@@ -401,6 +477,20 @@ const UserTracker = () => {
                   </nav>
                 </div>
               )}
+
+
+                               <Modal className="customModal brandModal" size="lg"
+                                  show={showModal}
+                                  onHide={handleClose}>
+                                  <Modal.Header closeButton className="custmModlHead">
+                                      <div ><h3>{getModelTitle()} - {selectedModelType}  </h3> </div>
+                                  </Modal.Header>
+                                  <Modal.Body>                                           
+                                  
+                                    {/* <LoginTrackerModel rowData = {rowData} /> */}
+                                    {renderModelComponent()}
+                                  </Modal.Body>
+                              </Modal>
 
               {/* Temporary Debug Info */}
          {/*     {filterUserId && (
