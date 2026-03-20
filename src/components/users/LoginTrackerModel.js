@@ -7,7 +7,7 @@ const LoginTrackerModel = ({ rowData }) => {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize] = useState(10);
+  const [pageSize] = useState(20);
   const [loginList, setLoginList] = useState([]);
 
   // ✅ Run when rowData changes

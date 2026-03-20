@@ -8,7 +8,8 @@ const DownloadTrackerModel = ({ rowData }) => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(10);
-  const [loginList, setLoginList] = useState([]);
+  //const [loginList, setLoginList] = useState([]);
+  const [downloadList,setDownloadList]=useState([]);
 
   // ✅ Run when rowData changes
   useEffect(() => {
@@ -19,31 +20,41 @@ const DownloadTrackerModel = ({ rowData }) => {
   }, [rowData]);
 
   // ✅ Total Count API
-  const getTotalCount = (userId) => {
-    let url = `/search-management/search/countAllnew?isDownloaded=Y`;
+const getTotalCount = (userId) => {
+  let url = `/search-management/search/countAllnew?isDownloaded=Y`;
 
-    if (userId) {
-      url += `?userId=${userId}`;
-    }
+  if (userId) {
+    url += `&userId=${userId}`;
+  }
 
-    AxiosUser({ method: "GET", url })
-      .then((res) => {
-        let count = res.data?.totalCount || res.data || 0;
-        setTotalCount(count);
-      })
-      .catch(() => setTotalCount(0));
-  };
-
+  AxiosUser({
+    method: "GET",
+    url,
+  })
+    .then((res) => {
+      console.log("Count API success:", res);
+      let count = res.data?.totalCount || res.data || 0;
+      setTotalCount(count);
+    })
+    .catch((err) => {
+      console.log("Full count API error:", err);
+      console.log("Error response:", err?.response);
+      console.log("Error data:", err?.response?.data);
+      console.log("Error status:", err?.response?.status);
+      console.log("Error message:", err?.message);
+      setTotalCount(0);
+    });
+};
   // ✅ Fetch List with Pagination
   const fetchData = (userId, page) => {
     setLoading(true);
 
-    let url = `/user-management/user/listAllnew?pageNumber=${page}&pageSize=${pageSize}&userId=${userId}`;
+    let url = `/search-management/search/listAllnew?pageNumber=${page}&pageSize=${pageSize}&userId=${userId}`;
 
     AxiosUser({ method: "GET", url })
       .then((res) => {
-
-        let data = res.data?.loginList || res.data || [];
+  console.log("res DATA",res);
+        let data = res.data?.downloadList || res.data || [];
 
         const formatted = data.map((item, index) => {
           const login = formatDateTime(item.loginDate, item.loginTime);
@@ -59,10 +70,10 @@ const DownloadTrackerModel = ({ rowData }) => {
           };
         });
 
-        setLoginList(formatted);
+        setDownloadList(formatted);
         setCurrentPage(page);
       })
-      .catch(() => setLoginList([]))
+      .catch(() => setDownloadList([]))
       .finally(() => setLoading(false));
   };
 
@@ -113,8 +124,8 @@ const DownloadTrackerModel = ({ rowData }) => {
                 </thead>
 
                 <tbody>
-                  {loginList.length > 0 ? (
-                    loginList.map((item, index) => (
+                  {downloadList.length > 0 ? (
+                    downloadList.map((item, index) => (
                       <tr key={item.id}>
                         <td>{currentPage * pageSize + index + 1}</td>
                         <td>{item.name}</td>

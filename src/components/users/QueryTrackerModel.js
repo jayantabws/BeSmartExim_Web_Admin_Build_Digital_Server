@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import AxiosUser from '../shared/AxiosUser';
 import moment from "moment";
+import Axios from '../shared/Axios';
 
 const QueryTrackerModel = ({ rowData }) => {
-
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize] = useState(10);
-  const [loginList, setLoginList] = useState([]);
+  const [pageSize] = useState(20);
+  const [queryList, setQueryList] = useState([]);
 
-  // ✅ Run when rowData changes
   useEffect(() => {
     if (rowData?.id) {
       fetchData(rowData.id, 0);
@@ -18,59 +16,74 @@ const QueryTrackerModel = ({ rowData }) => {
     }
   }, [rowData]);
 
-  // ✅ Total Count API
   const getTotalCount = (userId) => {
-    let url = `/user-management/user/countAllnew`;
+    let url = `/search-management/search/countAllnew`;
 
     if (userId) {
       url += `?userId=${userId}`;
     }
 
-    AxiosUser({ method: "GET", url })
+    Axios({ method: "GET", url })
       .then((res) => {
-        let count = res.data?.totalCount || res.data || 0;
+        const count =
+          typeof res.data === "number"
+            ? res.data
+            : res.data?.totalCount || res.data?.count || 0;
+
         setTotalCount(count);
       })
       .catch(() => setTotalCount(0));
   };
 
-  // ✅ Fetch List with Pagination
   const fetchData = (userId, page) => {
     setLoading(true);
 
-    let url = `/user-management/user/listAllnew?pageNumber=${page}&pageSize=${pageSize}&userId=${userId}`;
+    const url = `/search-management/search/listAllnew?pageNumber=${page}&pageSize=${pageSize}&userId=${userId}`;
 
-    AxiosUser({ method: "GET", url })
+    Axios({
+      method: "GET",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
       .then((res) => {
+        const queryData = Array.isArray(res.data)
+          ? res.data
+          : res.data?.queryList || [];
 
-        let data = res.data?.loginList || res.data || [];
-
-        const formatted = data.map((item, index) => {
-          const login = formatDateTime(item.loginDate, item.loginTime);
-          const logout = formatDateTime(item.logoutDate, item.logoutTime);
+        const formattedList = queryData.map((item, index) => {
+          const created = formatDateTime(item.createdDate);
 
           return {
             ...item,
-            id: item.id || index,
-            loginDateOnly: login.date,
-            loginTimeOnly: login.time,
-            logoutDateOnly: logout.date,
-            logoutTimeOnly: logout.time,
+            id: item.searchId || `query-${page}-${index}`,
+            createdDateOnly: created.date,
+            createdTimeOnly: created.time,
           };
         });
 
-        setLoginList(formatted);
+        setQueryList(formattedList);
         setCurrentPage(page);
+
+        if (queryData.length === 0 && page === 0) {
+          setTotalCount(0);
+        }
       })
-      .catch(() => setLoginList([]))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        console.log("Err", err);
+        setQueryList([]);
+        setTotalCount(0);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
-  // ✅ Date Format Fix
-  const formatDateTime = (date, time) => {
-    if (!date && !time) return { date: "-", time: "-" };
+  const formatDateTime = (dateString) => {
+    if (!dateString) return { date: "-", time: "-" };
 
-    const dateObj = moment(time || date);
+    const dateObj = moment(dateString);
 
     if (dateObj.isValid()) {
       return {
@@ -82,7 +95,6 @@ const QueryTrackerModel = ({ rowData }) => {
     return { date: "-", time: "-" };
   };
 
-  // ✅ Pagination Logic
   const totalPages = Math.ceil(totalCount / pageSize);
 
   const handlePageChange = (page) => {
@@ -92,42 +104,57 @@ const QueryTrackerModel = ({ rowData }) => {
   return (
     <div className="card mt-4">
       <div className="card-body">
-
         {loading ? (
           <div className="text-center">Loading...</div>
         ) : (
           <>
-            {/* ✅ TABLE */}
             <div className="table-responsive">
               <table className="table table-bordered table-striped">
                 <thead className="table-dark">
                   <tr>
                     <th>#</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Login Date</th>
-                    <th>Login Time</th>
-                    <th>Logout Date</th>
-                    <th>Logout Time</th>
+                    <th>Search Type</th>
+                    <th>Query</th>
+                    <th>Trade Type</th>
+                    <th>Country</th>
+                    <th>Period</th>
+                    <th>Total Records</th>
+                    <th>Created Date</th>
+                    <th>Created Time</th>
+                    <th>Created By</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {loginList.length > 0 ? (
-                    loginList.map((item, index) => (
+                  {queryList.length > 0 ? (
+                    queryList.map((item, index) => (
                       <tr key={item.id}>
                         <td>{currentPage * pageSize + index + 1}</td>
-                        <td>{item.name}</td>
-                        <td>{item.email}</td>
-                        <td>{item.loginDateOnly}</td>
-                        <td>{item.loginTimeOnly}</td>
-                        <td>{item.logoutDateOnly}</td>
-                        <td>{item.logoutTimeOnly}</td>
+                        <td>{item.userSearchQuery?.searchType || "-"}</td>
+                        <td>
+                          {Array.isArray(item.userSearchQuery?.searchValue)
+                            ? item.userSearchQuery.searchValue.join(", ")
+                            : "-"}
+                        </td>
+                        <td>{item.userSearchQuery?.tradeType || "-"}</td>
+                        <td>
+                          {Array.isArray(item.userSearchQuery?.countryCode)
+                            ? item.userSearchQuery.countryCode.join(", ")
+                            : "-"}
+                        </td>
+                        <td>
+                          {item.userSearchQuery?.fromDate || "-"} to{" "}
+                          {item.userSearchQuery?.toDate || "-"}
+                        </td>
+                        <td>{item.totalRecords ?? 0}</td>
+                        <td>{item.createdDateOnly}</td>
+                        <td>{item.createdTimeOnly}</td>
+                        <td>{item.createdByName || "-"}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" className="text-center">
+                      <td colSpan="10" className="text-center">
                         No Data Found
                       </td>
                     </tr>
@@ -136,7 +163,6 @@ const QueryTrackerModel = ({ rowData }) => {
               </table>
             </div>
 
-            {/* ✅ PAGINATION */}
             <div className="d-flex justify-content-center mt-3">
               <button
                 className="btn btn-secondary me-2"
@@ -147,7 +173,7 @@ const QueryTrackerModel = ({ rowData }) => {
               </button>
 
               <span className="mx-2">
-                Page {currentPage + 1} of {totalPages}
+                Page {totalPages > 0 ? currentPage + 1 : 0} of {totalPages}
               </span>
 
               <button
@@ -160,7 +186,6 @@ const QueryTrackerModel = ({ rowData }) => {
             </div>
           </>
         )}
-
       </div>
     </div>
   );

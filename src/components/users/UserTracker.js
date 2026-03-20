@@ -396,7 +396,8 @@ const UserTracker = () => {
                           <td>{item.companyName}</td>
                         
                           <td>
-                            {item.isActive= "Y" ? (
+                            
+                            {item.isActive=="Y" ? (
                               <span className="badge bg-success">Active</span>
                             ) : (
                               <span className="badge bg-danger">InActive</span>
@@ -483,7 +484,7 @@ const UserTracker = () => {
                                   show={showModal}
                                   onHide={handleClose}>
                                   <Modal.Header closeButton className="custmModlHead">
-                                      <div ><h3>{getModelTitle()} - {selectedModelType}  </h3> </div>
+                                      <div ><h3>{getModelTitle()}   </h3> </div>
                                   </Modal.Header>
                                   <Modal.Body>                                           
                                   
