@@ -56,9 +56,17 @@ const DownloadTrackerModel = ({ rowData }) => {
 
           return {
             id: item.searchId || index,
-            query: item.userSearchQuery?.searchValue?.join(", ") || "-",
+          //  query: item.userSearchQuery?.searchValue?.join(", ") || "-",
             tradeType: item.userSearchQuery?.tradeType || "-",
-            country: item.userSearchQuery?.countryCode?.join(", ") || "-",
+           // country: item.userSearchQuery?.countryCode?.join(", ") || "-",
+
+                    query: Array.isArray(item.userSearchQuery?.searchValue)
+  ? item.userSearchQuery.searchValue.join(", ")
+  : item.userSearchQuery?.searchValue || "-",
+
+country: Array.isArray(item.userSearchQuery?.countryCode)
+  ? item.userSearchQuery.countryCode.join(", ")
+  : item.userSearchQuery?.countryCode || "-",
             period: formatPeriod(
               item.userSearchQuery?.fromDate,
               item.userSearchQuery?.toDate
@@ -135,30 +143,24 @@ const DownloadTrackerModel = ({ rowData }) => {
                   </tr>
                 </thead>
 
-                <tbody>
-                  {downloadList.length > 0 ? (
-                    downloadList.map((item, index) => (
-                      <tr key={item.id}>
-                        <td>{currentPage * pageSize + index + 1}</td>
-                        <td>{item.query}</td>
-                        <td>{item.tradeType}</td>
-                        <td>{item.country}</td>
-                        <td>{item.period}</td>
-                        <td>{item.totalRecords}</td>
-                        <td>{item.downloadedDateOnly}</td>
-                        <td>{item.downloadedTimeOnly}</td>
-                        <td>{item.downloadedBy}</td>
-                        <td>{item.recordsDownloaded}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="10" className="text-center">
-                        No Data Found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
+     
+                         <tbody>
+  {downloadList.map((item,index) => (
+    <tr key={item.id}>
+
+      <td>{currentPage * pageSize + index + 1}</td>
+      <td>{item.tradeType}</td>
+      <td>{item.query}</td>
+      <td>{item.country}</td>
+      <td>{item.period}</td>
+      <td>{item.totalRecords}</td>
+      <td>{item.downloadedDateOnly}</td>
+      <td>{item.downloadedTimeOnly}</td>
+      <td>{item.downloadedBy}</td>
+      <td>{item.recordsDownloaded}</td>
+    </tr>
+  ))}
+</tbody>
               </table>
             </div>
 
