@@ -18,7 +18,8 @@ const UpdatePermission = (props) => {
         activityLog: props.permissionData.activityLog === "Y" ? "Y" : "N",
         countries: props.permissionData.countries === "Y" ? "Y" : "N",
         contacts: props.permissionData.contacts === "Y" ? "Y" : "N",
-        siteSettings: props.permissionData.siteSettings === "Y" ? "Y" : "N"
+        siteSettings: props.permissionData.siteSettings === "Y" ? "Y" : "N",
+         userTracker:props.permissionData.userTracker==="Y" ? "Y" : "N"
       });
     }
   }, [props.permissionData]);
