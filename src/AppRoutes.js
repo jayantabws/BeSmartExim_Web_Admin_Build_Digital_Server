@@ -108,7 +108,7 @@ const AppRoutes = () => {
             <PrivateRoute path="/countries/countryList" component={ Countries } />
             <PrivateRoute path="/contacts/contactList" component={ Contacts } />
             <PrivateRoute path="/sitesetting/siteSetting" component={ SiteSetting } />
-            <PrivateRoute path="/users/usertracker" component={ UserTracker } />
+            <PrivateRoute path="/user/usertracker" component={ UserTracker } />
             
             <Redirect from="*" to="/error-404" />
           </Switch>
