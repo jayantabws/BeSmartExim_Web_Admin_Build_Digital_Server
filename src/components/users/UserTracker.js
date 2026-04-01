@@ -28,7 +28,7 @@ const UserTracker = () => {
   const [activeTab, setActiveTab] = useState("active");
 
   const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize] = useState(10);
+  const [pageSize] = useState(20);
   const [filterUserId, setFilterUserId] = useState("");
 
   const [rowData, setRowData] = useState([]);
