@@ -228,14 +228,31 @@ const UserTracker = () => {
 
   }
 
-  const formatDate = (date) => {
+//   const formatDateTime = (date) => {
+//   const d = new Date(date);
+
+//   const day = String(d.getDate()).padStart(2, "0");
+//   const month = String(d.getMonth() + 1).padStart(2, "0");
+//   const year = d.getFullYear();
+
+//   return `${day}-${month}-${year}`;
+// };
+
+
+const formatDateTime = (date) => {
   const d = new Date(date);
+
+  if (isNaN(d)) return "-";
 
   const day = String(d.getDate()).padStart(2, "0");
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const year = d.getFullYear();
 
-  return `${day}-${month}-${year}`;
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+
+  return `${day}-${month}-${year}  :  ${hours}:${minutes}:${seconds}`;
 };
   return (
     <div>
@@ -418,10 +435,10 @@ const UserTracker = () => {
                                                <td>
   {item.isDelete === "Y"
     ? item.modifiedDate
-      ? formatDate(item.modifiedDate)
+      ? formatDateTime(item.modifiedDate)
       : "-"
     : item.createdDate
-      ? formatDate(item.createdDate)
+      ? formatDateTime(item.createdDate)
       : "-"}
 </td>
                           <td>
