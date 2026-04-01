@@ -401,7 +401,8 @@ const formatDateTime = (date) => {
                      
                      
                       <th>Status</th>
-                      <th>{activeTab === "active" ? "Created Date" : "Deleted Date"}</th>
+                      <th>Created Date</th>
+                   {activeTab==='deleted' ?  (<th>Deleted Date</th>): '' }   
                       <th>Activity</th>
                     </tr>
                   </thead>
@@ -432,15 +433,18 @@ const formatDateTime = (date) => {
                             )}
                           </td>
 
-                                               <td>
+                          <td>{item.createdDate ? formatDateTime(item.createdDate) : "-"}</td>
+     {activeTab==='deleted' ?  (<td>
   {item.isDelete === "Y"
-    ? item.modifiedDate
-      ? formatDateTime(item.modifiedDate)
-      : "-"
-    : item.createdDate
-      ? formatDateTime(item.createdDate)
-      : "-"}
-</td>
+  ? item.modifiedDate
+    ? formatDateTime(item.modifiedDate)
+    : "-"
+  : "-"}
+
+
+</td>): '' }   
+  
+                                               
                           <td>
                               {/* <a className='btn btn-xs btn-primary' onClick={()=>LoginTracker(item)}>Login Tracker</a> &nbsp;
                               <a className='btn btn-xs btn-info'>Query Tracker</a>&nbsp;
