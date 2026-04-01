@@ -227,6 +227,16 @@ const UserTracker = () => {
      }
 
   }
+
+  const formatDate = (date) => {
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${day}-${month}-${year}`;
+};
   return (
     <div>
         <div className="page-header mb-4">
@@ -374,6 +384,7 @@ const UserTracker = () => {
                      
                      
                       <th>Status</th>
+                      <th>{activeTab === "active" ? "Created Date" : "Deleted Date"}</th>
                       <th>Activity</th>
                     </tr>
                   </thead>
@@ -403,6 +414,16 @@ const UserTracker = () => {
                               <span className="badge bg-danger">InActive</span>
                             )}
                           </td>
+
+                                               <td>
+  {item.isDelete === "Y"
+    ? item.modifiedDate
+      ? formatDate(item.modifiedDate)
+      : "-"
+    : item.createdDate
+      ? formatDate(item.createdDate)
+      : "-"}
+</td>
                           <td>
                               {/* <a className='btn btn-xs btn-primary' onClick={()=>LoginTracker(item)}>Login Tracker</a> &nbsp;
                               <a className='btn btn-xs btn-info'>Query Tracker</a>&nbsp;
