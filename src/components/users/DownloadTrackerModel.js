@@ -8,6 +8,28 @@ const DownloadTrackerModel = ({ rowData }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(20);
   const [downloadList, setDownloadList] = useState([]);
+ 
+
+  const [sortField, setSortField] = useState(null);
+const [sortOrder, setSortOrder] = useState("asc");
+
+const handleSort = (field) => {
+  if (sortField === field) {
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+  } else {
+    setSortField(field);
+    setSortOrder("asc");
+  }
+};
+
+const sortedData = [...downloadList].sort((a, b) => {
+  if (!sortField) return 0;
+
+  const valA = Number(a[sortField] ?? 0);
+  const valB = Number(b[sortField] ?? 0);
+
+  return sortOrder === "asc" ? valA - valB : valB - valA;
+});
 
   useEffect(() => {
     if (rowData?.id) {
@@ -139,13 +161,15 @@ country: Array.isArray(item.userSearchQuery?.countryCode)
                     <th>Downloaded On</th>
                     <th>Downloaded Time</th>
                     <th>Downloaded By</th>
-                    <th>Records Downloaded</th>
+                  <th onClick={() => handleSort("recordsDownloaded")} style={{ cursor: "pointer" }}>
+  Records Downloaded {sortField === "recordsDownloaded" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+</th>
                   </tr>
                 </thead>
 
      
                          <tbody>
-  {downloadList.map((item,index) => (
+  {sortedData.map((item,index) => (
     <tr key={item.id}>
 
       <td>{currentPage * pageSize + index + 1}</td>
