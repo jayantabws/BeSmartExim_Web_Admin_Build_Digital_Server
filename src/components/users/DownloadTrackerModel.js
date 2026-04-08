@@ -10,7 +10,7 @@ const DownloadTrackerModel = ({ rowData }) => {
   const [downloadList, setDownloadList] = useState([]);
  
 
-  const [sortField, setSortField] = useState(null);
+const [sortField, setSortField] = useState(null);
 const [sortOrder, setSortOrder] = useState("asc");
 
 const handleSort = (field) => {

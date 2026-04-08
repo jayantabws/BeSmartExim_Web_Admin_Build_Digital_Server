@@ -26,7 +26,7 @@ export default function Login() {
     const postData = {
       "email": values.email,
       "password": values.password,
-      "ipaddress": "10.252.252.10"
+      "ipaddress": ip
     }
     AxiosUser({
       method: "POST",
@@ -69,7 +69,7 @@ export default function Login() {
   };
 
   useEffect(()=>{
-   // getData()
+    getData()
     const userToken = sessionStorage.getItem("userToken");
     console.log("userToken", userToken);
     if(userToken){

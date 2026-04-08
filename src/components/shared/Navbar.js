@@ -37,7 +37,8 @@ class Navbar extends Component {
         alert("LogOut Successful")    
         sessionStorage.removeItem("userToken");
         sessionStorage.removeItem("userId");
-        sessionStorage.removeItem("userId");
+       // sessionStorage.removeItem("userId");
+         sessionStorage.removeItem("user");
         this.props.history.push('/')
         })
         .catch(err => {
