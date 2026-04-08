@@ -247,6 +247,10 @@ const QueryTracker = () => {
     return cell.countryCode;
   };
 
+  const ipAddress = (cell, row, enumObject, index) => {
+    return cell.ipAddress;
+  };
+
   const Period = (cell, row, enumObject, index) => {
     return moment(cell.fromDate).format("MMM. DD, YYYY") + " - " + moment(cell.toDate).format("MMM. DD, YYYY");
   };
@@ -512,6 +516,7 @@ const QueryTracker = () => {
                     <TableHeaderColumn width='75' dataField='userSearchQuery' dataFormat={TradeType} dataSort={true}>Trade Type</TableHeaderColumn>
                     <TableHeaderColumn width='75' dataField='userSearchQuery' dataFormat={Country} dataSort={true}>Country</TableHeaderColumn>
                     <TableHeaderColumn width='200' dataField='userSearchQuery' dataFormat={Period} dataSort={true}>Period</TableHeaderColumn>
+                    <TableHeaderColumn width='200' dataField='userSearchQuery' dataFormat={ipAddress} dataSort={true}>IP Address</TableHeaderColumn>
                     <TableHeaderColumn width='75' dataField='totalRecords' dataSort={true}>Total Records</TableHeaderColumn>
                     <TableHeaderColumn width='100' dataField='createdDate' dataFormat={CreatedDate} dataSort={true}>Created Date</TableHeaderColumn>
                     <TableHeaderColumn width='120' dataField='createdTimeOnly' dataSort={true}>Created Time</TableHeaderColumn>

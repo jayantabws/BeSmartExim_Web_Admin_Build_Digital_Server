@@ -296,6 +296,11 @@ const DownloadTracker = () => {
   const Country = (cell, row, enumObject, index) => {
     return cell.countryCode;
   };
+   const ipAddress = (cell, row, enumObject, index) => {
+    return cell.ipAddress ;
+  };
+
+  
 
   const Period = (cell, row, enumObject, index) => {
     return (
@@ -566,6 +571,7 @@ const DownloadTracker = () => {
                     <TableHeaderColumn width="75" dataField="userSearchQuery" dataFormat={TradeType} dataSort={true}>Trade Type</TableHeaderColumn>
                     <TableHeaderColumn width="60" dataField="userSearchQuery" dataFormat={Country} dataSort={true}>Country</TableHeaderColumn>
                     <TableHeaderColumn width="210" dataField="userSearchQuery" dataFormat={Period} dataSort={true}>Period</TableHeaderColumn>
+                     <TableHeaderColumn width='200' dataField='userSearchQuery' dataFormat={ipAddress} dataSort={true}>IP Address</TableHeaderColumn>
                     <TableHeaderColumn width="75" dataField="totalRecords" dataSort={true}>Total Records</TableHeaderColumn>
                     <TableHeaderColumn width="100" dataField="createdDate" dataFormat={CreatedDate} dataSort={true}>Downloaded on</TableHeaderColumn>
                         <TableHeaderColumn width="120" dataField="downloadedTimeOnly" dataSort={true}>Downloaded Time</TableHeaderColumn>
