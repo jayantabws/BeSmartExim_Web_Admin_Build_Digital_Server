@@ -76,7 +76,8 @@ class Sidebar extends Component {
       {path:'/contacts', state: 'contactMenuOpen'},
       {path:'/sitesetting', state: 'siteSettingMenuOpen'},
 
-       {path:'/user/usertracker', state: 'userTrackerMenuOpen'},
+      {path:'/user/usertracker', state: 'userTrackerMenuOpen'},
+        {path:'/companyWiseQuery', state: 'companyWiseQueryMenuOpen'},
       
     ];
 
@@ -305,23 +306,62 @@ class Sidebar extends Component {
           </li>
           )}
 
- {this.state.permissions.userTracker === "Y" && (
-             <li className={ this.isPathActive('/user/usertracker') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-            <div className={ this.state.siteSettingMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('userTrackerMenuOpen') } data-toggle="collapse">
-              <span className="menu-icon">
-                <i className="mdi mdi-table-large"></i>
-              </span>
-              <span className="menu-title"><Trans>User Tracker</Trans></span>
-              <i className="menu-arrow"></i>
-            </div>
-            <Collapse in={ this.state.userTrackerMenuOpen }>
-              <div>
-                <ul className="nav flex-column sub-menu">
-                  <li className="nav-item"> <Link className={ this.isPathActive('/user/usertracker') ? 'nav-link active' : 'nav-link' } to="/user/usertracker"><Trans>User Tracker</Trans></Link></li>
-                </ul>
-              </div>
-            </Collapse>            
-          </li>
+        {this.state.permissions.userTracker === "Y" && (
+         <li
+  className={
+    this.isPathActive('/user/usertracker') || this.isPathActive('/companyWiseQuery')
+      ? 'nav-item menu-items active'
+      : 'nav-item menu-items'
+  }
+>
+  <div
+    className={
+      this.state.userTrackerMenuOpen ||
+      this.isPathActive('/user/usertracker') ||
+      this.isPathActive('/companyWiseQuery')
+        ? 'nav-link menu-expanded'
+        : 'nav-link'
+    }
+    onClick={() => this.toggleMenuState('userTrackerMenuOpen')}
+    data-toggle="collapse"
+  >
+    <span className="menu-icon">
+      <i className="mdi mdi-table-large"></i>
+    </span>
+    <span className="menu-title"><Trans>User Tracker</Trans></span>
+    <i className="menu-arrow"></i>
+  </div>
+
+  <Collapse
+    in={
+      this.state.userTrackerMenuOpen ||
+      this.isPathActive('/user/usertracker') ||
+      this.isPathActive('/companyWiseQuery')
+    }
+  >
+    <div>
+      <ul className="nav flex-column sub-menu">
+        <li className="nav-item">
+          <Link
+            className={this.isPathActive('/user/usertracker') ? 'nav-link active' : 'nav-link'}
+            to="/user/usertracker"
+          >
+            <Trans>User Tracker</Trans>
+          </Link>
+        </li>
+
+        <li className="nav-item">
+          <Link
+            className={this.isPathActive('/companyWiseQuery') ? 'nav-link active' : 'nav-link'}
+            to="/companyWiseQuery"
+          >
+            <Trans>Company Wise Query</Trans>
+          </Link>
+        </li>
+      </ul>
+    </div>
+  </Collapse>
+</li>
             )}
         </ul>
       </nav>

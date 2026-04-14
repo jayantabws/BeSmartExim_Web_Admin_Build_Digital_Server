@@ -48,6 +48,7 @@ const CreateCountry = lazy(() => import('./components/countries/CreateCountry'))
 const Contacts = lazy(() => import('./components/contacts/Contacts'));
 const SiteSetting = lazy(() => import('./components/sitesetting/SiteSetting'));
 const UserTracker = lazy(() => import('./components/users/UserTracker'));
+const CompanyWiseQuery = lazy(() => import('./components/users/CompanyWiseQuery'));
 const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route {...rest} render={props => isAuthenticated() ? (
       <Component {...props} />
@@ -109,6 +110,7 @@ const AppRoutes = () => {
             <PrivateRoute path="/contacts/contactList" component={ Contacts } />
             <PrivateRoute path="/sitesetting/siteSetting" component={ SiteSetting } />
             <PrivateRoute path="/user/usertracker" component={ UserTracker } />
+            <PrivateRoute path="/companyWiseQuery" component={ CompanyWiseQuery } />
             
             <Redirect from="*" to="/error-404" />
           </Switch>

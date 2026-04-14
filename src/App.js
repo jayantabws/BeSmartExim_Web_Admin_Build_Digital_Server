@@ -8,6 +8,9 @@ import Footer from './components/shared/Footer';
 import { withTranslation } from "react-i18next";
 import { ThemeProvider } from './components/context/ThemeContext';
 
+import AxiosUser from "./components/shared/AxiosUser";
+import IdleTimerLogout from './components/IdealLogout/IdleTimerLogout';
+
 class App extends Component {
   constructor(props){
     super(props)
@@ -22,6 +25,39 @@ class App extends Component {
   componentDidMount() {
    // this.onRouteChanged();
   }
+
+    logoutUser = () => {
+    let values = sessionStorage.getItem("user")
+      ? JSON.parse(sessionStorage.getItem("user"))
+      : {};
+
+    const postData = {
+      userId: values.userid,
+      loginId: values.loginId,
+      sessionId: values.sessionId
+    };
+
+    AxiosUser({
+      method: "PUT",
+      url: `/user-management/logout`,
+      data: JSON.stringify(postData),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+      .then(() => {
+        alert("LogOut Successful");
+
+        sessionStorage.removeItem("userToken");
+        sessionStorage.removeItem("userId");
+
+        this.props.history.push("/");
+      })
+      .catch(() => {
+        console.log("Logout error");
+      });
+  };
+
   render () {
     let navbarComponent = !this.state.isFullPageLayout ? <Navbar {...this.props}/> : '';
     let sidebarComponent = !this.state.isFullPageLayout ? <Sidebar/> : '';
@@ -30,12 +66,18 @@ class App extends Component {
     return (
       <ThemeProvider >
         <div className="container-scroller">
+
+          {/* {sessionStorage.getItem("userToken") && (
+      <IdleTimerLogout onLogout={this.logoutUser} />
+    )} */}
+    
           { (this.isPathActive('/login') || this.props.location.pathname == '/')  ? null : sidebarComponent }
           <div className="container-fluid page-body-wrapper">
             { (this.isPathActive('/login') || this.props.location.pathname == '/') ? null : navbarComponent } 
             <div className="main-panel">
               <div className="content-wrapper">
                 <AppRoutes/>
+              
               </div>
               { (this.isPathActive('/login') || this.props.location.pathname == '/') ? null : footerComponent } 
             </div>
